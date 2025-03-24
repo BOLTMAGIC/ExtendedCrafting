@@ -52,6 +52,10 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         super(type, pos, state);
     }
 
+    /**
+     * Saves more info from the table
+     * @param tag The already saved info as NBT
+     */
     @Override
     public void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
@@ -61,6 +65,10 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         tag.merge(this.getRecipeStorage().serializeNBT());
     }
 
+    /**
+     * Loads save data
+     * @param tag The save data as NBT
+     */
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
@@ -70,6 +78,10 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         this.getRecipeStorage().deserializeNBT(tag);
     }
 
+    /**
+     * Runs whenever the block is loaded.
+     * Separate from ::load, in that it doesn't load data.
+     */
     @Override
     public void onLoad() {
         super.onLoad();
@@ -80,6 +92,13 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         }
     }
 
+    /**
+     * TODO: COMMENT
+     * @param cap
+     * @param side
+     * @return
+     * @param <T>
+     */
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
         if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
@@ -89,6 +108,14 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         return super.getCapability(cap, side);
     }
 
+    /**
+     * Method that runs every tick. Allows the tile entity to do stuff.
+     * Interestingly, this is a static method TODO: Figure out why (optional)
+     * @param level TODO: Learn what levels are
+     * @param pos Block position
+     * @param state TODO: Learn what BlockStates are
+     * @param tile The tile entity being run.
+     */
     public static void tick(Level level, BlockPos pos, BlockState state, AutoTableTileEntity tile) {
         var energy = tile.getEnergy();
 
@@ -167,24 +194,43 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         tile.dispatchIfChanged();
     }
 
+    /**
+     * Gets recipe progress. Increments every tick while crafting something.
+     * @return Recipe progress
+     */
     public int getProgress() {
         return this.progress;
     }
 
+    /**
+     * Returns whether the table is running (able to craft)
+     * @return
+     */
     public boolean isRunning() {
         return this.running;
     }
 
+    /**
+     * Toggles whether the table is running (attempts to craft)
+     */
     public void toggleRunning() {
         this.running = !this.running;
         this.setChangedAndDispatch();
     }
 
+    /**
+     * Sets the selected recipe in the storage.
+     * @param index Stored recipe index TODO: Scrap
+     */
     public void selectRecipe(int index) {
         this.getRecipeStorage().setSelected(index);
         this.setChangedAndDispatch();
     }
 
+    /**
+     *
+     * @param index
+     */
     public void saveRecipe(int index) {
         var level = this.getLevel();
         if (level == null)
