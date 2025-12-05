@@ -146,13 +146,13 @@ public class RecipeMakerItem extends BaseItem {
 				if ("CraftTweaker".equals(type)) {
 					string = makeCraftTweakerCombinationRecipe(core);
 				} else if ("KubeJS".equals(type)) {
-					String json = makeDatapackCombinationRecipe(core);
+					String json = makeDatapackCombinationRecipe(core, outputStack);
                     json = getString(json);
                     String comment = outputItemId.isEmpty() ? "" : "\n  // " + outputItemId;
 					String idPart = outputItemId.isEmpty() ? "" : "\n  .id('" + outputItemId + "');";
 					string = "ServerEvents.recipes((event) => {" + comment + "\n  event.custom({\n" + json + "\n  })" + idPart + "\n});";
 				} else {
-					string = makeDatapackCombinationRecipe(core);
+					string = makeDatapackCombinationRecipe(core, outputStack);
 				}
 
 				setClipboard(string);
@@ -217,7 +217,7 @@ public class RecipeMakerItem extends BaseItem {
 		if ("TableCrafting".equals(type)) string.append("0, ");
 
 		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
-		var outputItem = outputId == null ? "item:minecraft:air" : "item:" + outputId;
+		var outputItem = output.isEmpty() ? "<item:''>" : (outputId == null ? "<item:minecraft:air>" : "<item:" + outputId + ">");
 		string.append("<").append(outputItem).append(">");
 
 		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag() && ModList.get().isLoaded("crafttweaker")) {
@@ -296,7 +296,7 @@ public class RecipeMakerItem extends BaseItem {
 		if ("TableCrafting".equals(type)) string.append("0, ");
 
 		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
-		var outputItem = outputId == null ? "item:minecraft:air" : "item:" + outputId;
+		var outputItem = output.isEmpty() ? "<item:''>" : (outputId == null ? "item:minecraft:air" : "item:" + outputId);
 		string.append("<").append(outputItem).append(">");
 
 		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag() && ModList.get().isLoaded("crafttweaker")) {
@@ -478,7 +478,8 @@ public class RecipeMakerItem extends BaseItem {
 		var result = new JsonObject();
 
 		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
-		result.addProperty("item", outputId == null ? "minecraft:air" : outputId.toString());
+		String itemValue = (output.getItem() == Items.AIR) ? "" : (outputId == null ? "minecraft:air" : outputId.toString());
+		result.addProperty("item", itemValue);
 		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag()) {
             assert output.getTag() != null;
             result.addProperty("nbt", output.getTag().toString());
@@ -541,7 +542,7 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a Datapack recipe for a combination crafting recipe
-	private static String makeDatapackCombinationRecipe(CraftingCoreTileEntity core) {
+	private static String makeDatapackCombinationRecipe(CraftingCoreTileEntity core, ItemStack output) {
 		var object = new JsonObject();
 
 		object.addProperty("type", "extendedcrafting:combination");
@@ -575,7 +576,13 @@ public class RecipeMakerItem extends BaseItem {
 
 		var result = new JsonObject();
 
-		result.addProperty("item", "");
+		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
+		String itemValue = (output.getItem() == Items.AIR) ? "" : (outputId == null ? "minecraft:air" : outputId.toString());
+		result.addProperty("item", itemValue);
+		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag()) {
+            assert output.getTag() != null;
+            result.addProperty("nbt", output.getTag().toString());
+		}
 		object.add("result", result);
 
 		return GSON.toJson(object);
