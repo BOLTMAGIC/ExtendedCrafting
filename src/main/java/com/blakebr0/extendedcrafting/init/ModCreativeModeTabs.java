@@ -16,6 +16,7 @@ import net.minecraftforge.registries.RegistryObject;
 public final class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ExtendedCrafting.MOD_ID);
 
+    @SuppressWarnings("unused")
     public static final RegistryObject<CreativeModeTab> CREATIVE_TAB = REGISTRY.register("creative_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.extendedcrafting"))
             .icon(() -> new ItemStack(ModItems.LUMINESSENCE.get()))
@@ -105,6 +106,11 @@ public final class ModCreativeModeTabs {
                 stack = new ItemStack(ModItems.RECIPE_MAKER.get());
                 NBTHelper.setBoolean(stack, "Shapeless", false);
                 NBTHelper.setString(stack, "Type", "CraftTweaker");
+                output.accept(stack, ModFeatureFlags.RECIPE_MAKER);
+
+                stack = new ItemStack(ModItems.RECIPE_MAKER.get());
+                NBTHelper.setBoolean(stack, "Shapeless", false);
+                NBTHelper.setString(stack, "Type", "KubeJS");
                 output.accept(stack, ModFeatureFlags.RECIPE_MAKER);
 
                 for (var singularity : SingularityRegistry.getInstance().getSingularities()) {
