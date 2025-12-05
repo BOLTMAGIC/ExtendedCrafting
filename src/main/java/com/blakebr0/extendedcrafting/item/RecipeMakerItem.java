@@ -12,6 +12,7 @@ import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.BasicTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.CraftingCoreTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.EliteTableTileEntity;
+import com.blakebr0.extendedcrafting.tileentity.EpicTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.EnderCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.FluxCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.UltimateTableTileEntity;
@@ -26,6 +27,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -37,6 +39,7 @@ import net.minecraftforge.common.crafting.StrictNBTIngredient;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,16 +79,45 @@ public class RecipeMakerItem extends BaseItem {
 						? "FluxCrafting"
 						: "TableCrafting";
 
+				int gridSlots = getGridSlots(inventory);
+				if (!hasItems(inventory, gridSlots)) {
+					player.sendSystemMessage(Localizable.of("message.extendedcrafting.no_items_in_grid").build());
+					return InteractionResult.SUCCESS;
+				}
+
+				var outputStack = player.getInventory().getItem(0);
+				if (outputStack.isEmpty()) {
+					player.sendSystemMessage(Localizable.of("message.extendedcrafting.no_output_item_warning").build());
+				}
+
 				String string;
 				if ("CraftTweaker".equals(type)) {
 					string = isShapeless(stack)
-							? makeShapelessCraftTweakerTableRecipe(inventory, block)
-							: makeShapedCraftTweakerTableRecipe(inventory, block);
+							? makeShapelessCraftTweakerTableRecipe(inventory, block, outputStack)
+							: makeShapedCraftTweakerTableRecipe(inventory, block, outputStack);
+
+				} else if ("KubeJS".equals(type)) {
+					String json = isShapeless(stack)
+							? makeShapelessDatapackTableRecipe(inventory, block, outputStack)
+							: makeShapedDatapackTableRecipe(inventory, block, outputStack);
+
+					if ("TOO MANY ITEMS".equals(json)) {
+						player.sendSystemMessage(Localizable.of("message.extendedcrafting.max_unique_items_exceeded").args(KEYS.length).build());
+						return InteractionResult.SUCCESS;
+					}
+
+                    json = getString(json);
+
+                    var outputId = ForgeRegistries.ITEMS.getKey(outputStack.getItem());
+					var outputItemId = (outputStack.isEmpty() || outputStack.getItem() == Items.AIR) ? "" : (outputId == null ? "minecraft:air" : outputId.toString());
+					String comment = outputItemId.isEmpty() ? "" : "\n  // " + outputItemId;
+					String idPart = outputItemId.isEmpty() ? "" : "\n  .id('" + outputItemId + "');";
+					string = "ServerEvents.recipes((event) => {" + comment + "\n  event.custom({\n" + json + "\n  })" + idPart + "\n});";
 
 				} else {
 					string = isShapeless(stack)
-							? makeShapelessDatapackTableRecipe(inventory, block)
-							: makeShapedDatapackTableRecipe(inventory, block);
+							? makeShapelessDatapackTableRecipe(inventory, block, outputStack)
+							: makeShapedDatapackTableRecipe(inventory, block, outputStack);
 
 					if ("TOO MANY ITEMS".equals(string)) {
 						player.sendSystemMessage(Localizable.of("message.extendedcrafting.max_unique_items_exceeded").args(KEYS.length).build());
@@ -107,9 +139,21 @@ public class RecipeMakerItem extends BaseItem {
 		} else if (tile instanceof CraftingCoreTileEntity core) {
 			if (level.isClientSide()) {
 				var type = NBTHelper.getString(stack, "Type");
-				var string = "CraftTweaker".equals(type)
-						? makeCraftTweakerCombinationRecipe(core)
-						: makeDatapackCombinationRecipe(core);
+				var outputStack = player.getInventory().getItem(0);
+				var outputId = ForgeRegistries.ITEMS.getKey(outputStack.getItem());
+				var outputItemId = (outputStack.isEmpty() || outputStack.getItem() == Items.AIR) ? "" : (outputId == null ? "minecraft:air" : outputId.toString());
+				String string;
+				if ("CraftTweaker".equals(type)) {
+					string = makeCraftTweakerCombinationRecipe(core);
+				} else if ("KubeJS".equals(type)) {
+					String json = makeDatapackCombinationRecipe(core);
+                    json = getString(json);
+                    String comment = outputItemId.isEmpty() ? "" : "\n  // " + outputItemId;
+					String idPart = outputItemId.isEmpty() ? "" : "\n  .id('" + outputItemId + "');";
+					string = "ServerEvents.recipes((event) => {" + comment + "\n  event.custom({\n" + json + "\n  })" + idPart + "\n});";
+				} else {
+					string = makeDatapackCombinationRecipe(core);
+				}
 
 				setClipboard(string);
 
@@ -122,11 +166,25 @@ public class RecipeMakerItem extends BaseItem {
 		return InteractionResult.PASS;
 	}
 
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-		if (player.isCrouching()) {
-			var stack = player.getItemInHand(hand);
+    @NotNull
+    private String getString(String json) {
+        String[] lines = json.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < lines.length - 1; i++) {
+            if (i > 1) sb.append("\n");
+            sb.append(lines[i]);
+        }
+        json = sb.toString();
+        json = json.replaceAll("\"([^\"]+)\":", "$1:");
+        json = json.replace("\"", "'");
+        return json;
+    }
 
+    @Override
+	public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
+		var stack = player.getItemInHand(hand);
+
+		if (player.isCrouching()) {
 			NBTHelper.flipBoolean(stack, "Shapeless");
 
 			if (level.isClientSide()) {
@@ -139,8 +197,10 @@ public class RecipeMakerItem extends BaseItem {
 
 	@OnlyIn(Dist.CLIENT)
 	@Override
-	public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(ModTooltips.TYPE.args(NBTHelper.getString(stack, "Type")).build());
+	public void appendHoverText(@NotNull ItemStack stack, Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+		var type = NBTHelper.getString(stack, "Type");
+		if (type.isEmpty()) type = "Datapack";
+		tooltip.add(ModTooltips.TYPE.args(type).build());
 		tooltip.add(ModTooltips.MODE.args(getModeString(stack)).build());
 	}
 
@@ -149,13 +209,24 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shaped CraftTweaker recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapedCraftTweakerTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapedCraftTweakerTableRecipe(IItemHandler inventory, String type, ItemStack output) {
 		var string = new StringBuilder();
 		var uuid = UUID.randomUUID();
 
 		string.append("mods.extendedcrafting.").append(type).append(".addShaped(\"").append(uuid).append("\", ");
 		if ("TableCrafting".equals(type)) string.append("0, ");
-		string.append("<>, [").append(NEW_LINE);
+
+		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
+		var outputItem = outputId == null ? "item:minecraft:air" : "item:" + outputId;
+		string.append("<").append(outputItem).append(">");
+
+		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag() && ModList.get().isLoaded("crafttweaker")) {
+			var nbt = output.getTag();
+			var tag = CraftTweakerUtils.writeTag(nbt);
+			string.append(".withTag(").append(tag).append(")");
+		}
+
+		string.append(", [").append(NEW_LINE);
 
 		int slots = getGridSlots(inventory);
 		int sr = (int) Math.sqrt(slots);
@@ -217,13 +288,24 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shapeless CraftTweaker recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapelessCraftTweakerTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapelessCraftTweakerTableRecipe(IItemHandler inventory, String type, ItemStack output) {
 		var string = new StringBuilder();
 		var uuid = UUID.randomUUID();
 
 		string.append("mods.extendedcrafting.").append(type).append(".addShapeless(\"").append(uuid).append("\", ");
 		if ("TableCrafting".equals(type)) string.append("0, ");
-		string.append("<>, [").append(NEW_LINE);
+
+		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
+		var outputItem = outputId == null ? "item:minecraft:air" : "item:" + outputId;
+		string.append("<").append(outputItem).append(">");
+
+		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag() && ModList.get().isLoaded("crafttweaker")) {
+			var nbt = output.getTag();
+			var tag = CraftTweakerUtils.writeTag(nbt);
+			string.append(".withTag(").append(tag).append(")");
+		}
+
+		string.append(", [").append(NEW_LINE);
 
 		List<Integer> slotsWithItems = new ArrayList<>();
 		int slots = getGridSlots(inventory);
@@ -299,7 +381,7 @@ public class RecipeMakerItem extends BaseItem {
 
 			String item;
 			if (ModConfigs.RECIPE_MAKER_USE_TAGS.get() && tagId != null) {
-				item = "tag:items:" + tagId;
+				item = "tag:items:" + tagId.location();
 			} else {
 				var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
 				item = id == null ? "item:minecraft:air" : "item:" + id;
@@ -325,7 +407,7 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shaped Datapack recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapedDatapackTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapedDatapackTableRecipe(IItemHandler inventory, String type, ItemStack output) {
 		var object = new JsonObject();
 		var tableType = TableType.fromType(type);
 
@@ -395,14 +477,19 @@ public class RecipeMakerItem extends BaseItem {
 
 		var result = new JsonObject();
 
-		result.addProperty("item", "");
+		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
+		result.addProperty("item", outputId == null ? "minecraft:air" : outputId.toString());
+		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag()) {
+            assert output.getTag() != null;
+            result.addProperty("nbt", output.getTag().toString());
+		}
 		object.add("result", result);
 
 		return GSON.toJson(object);
 	}
 
 	// Create a shapeless Datapack recipe for a Table Flux Crafter or Ender Crafter
-	private static String makeShapelessDatapackTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapelessDatapackTableRecipe(IItemHandler inventory, String type, ItemStack output) {
 		var object = new JsonObject();
 		var tableType = TableType.fromType(type);
 
@@ -441,7 +528,13 @@ public class RecipeMakerItem extends BaseItem {
 
 		var result = new JsonObject();
 
-		result.addProperty("item", "");
+		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
+		String itemValue = (output.getItem() == Items.AIR) ? "" : (outputId == null ? "minecraft:air" : outputId.toString());
+		result.addProperty("item", itemValue);
+		if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !output.isEmpty() && output.hasTag()) {
+            assert output.getTag() != null;
+            result.addProperty("nbt", output.getTag().toString());
+		}
 		object.add("result", result);
 
 		return GSON.toJson(object);
@@ -488,10 +581,12 @@ public class RecipeMakerItem extends BaseItem {
 		return GSON.toJson(object);
 	}
 
+
 	private static boolean isTable(BlockEntity tile) {
 		return tile instanceof BasicTableTileEntity ||
 				tile instanceof AdvancedTableTileEntity ||
 				tile instanceof EliteTableTileEntity ||
+				tile instanceof EpicTableTileEntity ||
 				tile instanceof UltimateTableTileEntity ||
 				tile instanceof AutoTableTileEntity ||
 				tile instanceof EnderCrafterTileEntity ||
@@ -509,10 +604,21 @@ public class RecipeMakerItem extends BaseItem {
 	private static int getGridSlots(IItemHandler inventory) {
 		int slots = inventory.getSlots();
 
-		if (slots >= 81) return 81;
+		if (slots >= 121) return 121;
+		else if (slots >= 81) return 81;
 		else if (slots >= 49) return 49;
 		else if (slots >= 25) return 25;
 		else return 9;
+	}
+
+	private static boolean hasItems(IItemHandler inventory, int gridSlots) {
+		for (int i = 0; i < gridSlots; i++) {
+			if (!inventory.getStackInSlot(i).isEmpty()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private enum TableType {

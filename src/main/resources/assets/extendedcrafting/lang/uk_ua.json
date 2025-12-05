@@ -102,6 +102,9 @@
   "message.extendedcrafting.copied_recipe": "Рецепт скопійовано в буфер обміну.",
   "message.extendedcrafting.nbt_requires_crafttweaker": "Для копіювання NBT потрібен CraftTweaker.",
   "message.extendedcrafting.max_unique_items_exceeded": "Ви можете мати максимум (%s) унікальних предметів у формованому рецепті датапака.",
+  "message.extendedcrafting.no_items_in_grid": "У сітці немає елементів для копіювання.",
+  "message.extendedcrafting.no_output_item_warning": "У першому слоті швидкого доступу немає предмета. Ви можете покласти вихідний предмет у перший слот, щоб включити його в скопійований рецепт.",
+
 
   "jei.category.extendedcrafting.combination": "Комбіноване майстрування",
   "jei.category.extendedcrafting.basic_crafting": "Базове майстрування",
@@ -129,7 +132,6 @@
   "singularity.extendedcrafting.nickel": "Нікелева",
   "singularity.extendedcrafting.electrum": "Електрумова",
   "singularity.extendedcrafting.invar": "Інварова",
-  "singularity.extendedcrafting.uranium": "Уранова",
   "singularity.extendedcrafting.platinum": "Платинова",
 
   "book.extendedcrafting.name": "Extended Crafting",
