@@ -229,7 +229,8 @@ public class ShapelessTableRecipe implements ISpecialRecipe, ITableRecipe {
 				: size < 26 ? 2
 				: size < 50 ? 3
 				: size < 82 ? 4
-				: 5;
+                : size < 122 ? 5
+                : 6;
 	}
 
 	/**

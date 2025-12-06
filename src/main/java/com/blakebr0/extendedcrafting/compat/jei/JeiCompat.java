@@ -56,7 +56,8 @@ public final class JeiCompat implements IModPlugin {
 					new AdvancedTableCategory(helper),
 					new EliteTableCategory(helper),
 					new UltimateTableCategory(helper),
-					new EpicTableCategory(helper)
+					new EpicTableCategory(helper),
+                    new LegendaryTableCategory(helper)
 			);
 		}
 
@@ -85,7 +86,7 @@ public final class JeiCompat implements IModPlugin {
 			}
 
 			if (ModConfigs.ENABLE_TABLES.get()) {
-				var recipes = Stream.of(1, 2, 3, 4, 5).collect(Collectors.toMap(tier -> tier, tier ->
+				var recipes = Stream.of(1, 2, 3, 4, 5, 6).collect(Collectors.toMap(tier -> tier, tier ->
 					manager.byType(ModRecipeTypes.TABLE.get()).values()
 						.stream()
 						.filter(recipe -> tier == recipe.getTier())
@@ -97,6 +98,7 @@ public final class JeiCompat implements IModPlugin {
 				registration.addRecipes(EliteTableCategory.RECIPE_TYPE, recipes.getOrDefault(3, new ArrayList<>()));
 				registration.addRecipes(UltimateTableCategory.RECIPE_TYPE, recipes.getOrDefault(4, new ArrayList<>()));
 				registration.addRecipes(EpicTableCategory.RECIPE_TYPE, recipes.getOrDefault(5, new ArrayList<>()));
+                registration.addRecipes(LegendaryTableCategory.RECIPE_TYPE, recipes.getOrDefault(6, new ArrayList<>()));
 			}
 
 			if (ModConfigs.ENABLE_COMPRESSOR.get()) {
@@ -130,6 +132,7 @@ public final class JeiCompat implements IModPlugin {
 			registration.addRecipeCatalyst(new ItemStack(ModBlocks.ELITE_TABLE.get()), EliteTableCategory.RECIPE_TYPE);
 			registration.addRecipeCatalyst(new ItemStack(ModBlocks.ULTIMATE_TABLE.get()), UltimateTableCategory.RECIPE_TYPE);
 			registration.addRecipeCatalyst(new ItemStack(ModBlocks.EPIC_TABLE.get()), EpicTableCategory.RECIPE_TYPE);
+            registration.addRecipeCatalyst(new ItemStack(ModBlocks.LEGENDARY_TABLE.get()), LegendaryTableCategory.RECIPE_TYPE);
 
 			if (ModConfigs.TABLE_USE_VANILLA_RECIPES.get()) {
 				registration.addRecipeCatalyst(new ItemStack(ModBlocks.BASIC_TABLE.get()), mezz.jei.api.constants.RecipeTypes.CRAFTING);
@@ -181,6 +184,7 @@ public final class JeiCompat implements IModPlugin {
 			registration.addRecipeTransferHandler(EliteTableContainer.class, ModContainerTypes.ELITE_TABLE.get(), EliteTableCategory.RECIPE_TYPE, 1, 49, 50, 36);
 			registration.addRecipeTransferHandler(UltimateTableContainer.class, ModContainerTypes.ULTIMATE_TABLE.get(), UltimateTableCategory.RECIPE_TYPE, 1, 81, 82, 36);
 			registration.addRecipeTransferHandler(EpicTableContainer.class, ModContainerTypes.EPIC_TABLE.get(), EpicTableCategory.RECIPE_TYPE, 1, 121, 122, 36);
+            registration.addRecipeTransferHandler(LegendaryTableContainer.class, ModContainerTypes.LEGENDARY_TABLE.get(), LegendaryTableCategory.RECIPE_TYPE, 1, 169, 170, 36);
 
 			if (ModConfigs.TABLE_USE_VANILLA_RECIPES.get()) {
 				registration.addRecipeTransferHandler(BasicTableContainer.class, ModContainerTypes.BASIC_TABLE.get(), mezz.jei.api.constants.RecipeTypes.CRAFTING, 1, 9, 10, 36);
@@ -234,7 +238,7 @@ public final class JeiCompat implements IModPlugin {
 				registration.addRecipeClickArea(AdvancedAutoTableScreen.class, 121, 39, 21, 14, AdvancedTableCategory.RECIPE_TYPE);
 				registration.addRecipeClickArea(EliteAutoTableScreen.class, 158, 72, 21, 14, EliteTableCategory.RECIPE_TYPE);
 				registration.addRecipeClickArea(UltimateAutoTableScreen.class, 193, 90, 21, 14, UltimateTableCategory.RECIPE_TYPE);
-				registration.addRecipeClickArea(EpicAutoTableScreen.class, 237, 108, 21, 14, UltimateTableCategory.RECIPE_TYPE);
+				registration.addRecipeClickArea(EpicAutoTableScreen.class, 237, 108, 21, 14, EpicTableCategory.RECIPE_TYPE);
 			}
 		}
 

@@ -1,0 +1,26 @@
+{
+  "type": "extendedcrafting:shaped_table",
+  "pattern": [
+    "XXXXXXXXXXXXX",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "X           X",
+    "XXXXXXXXXXXXX"
+  ],
+  "key": {
+    "X": {
+      "tag": "forge:ingots/gold"
+    }
+  },
+  "result": {
+    "item": "minecraft:apple"
+  }
+}

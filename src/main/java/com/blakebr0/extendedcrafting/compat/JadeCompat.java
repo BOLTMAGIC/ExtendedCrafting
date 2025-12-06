@@ -24,6 +24,7 @@ public class JadeCompat implements IWailaPlugin {
 	private static final ResourceLocation ELITE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_table");
 	private static final ResourceLocation ULTIMATE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ultimate_table");
 	private static final ResourceLocation EPIC_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "epic_table");
+    private static final ResourceLocation LEGENDARY_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "legendary_table");
 	private static final ResourceLocation BASIC_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "basic_auto_table");
 	private static final ResourceLocation ADVANCED_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "advanced_auto_table");
 	private static final ResourceLocation ELITE_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_auto_table");
@@ -117,7 +118,19 @@ public class JadeCompat implements IWailaPlugin {
 			}
 		}, EpicTableBlock.class);
 
-		registration.registerBlockComponent(new IBlockComponentProvider() {
+        registration.registerBlockComponent(new IBlockComponentProvider() {
+            @Override
+            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+                tooltip.add(ModTooltips.TIER.args(6).build());
+            }
+
+            @Override
+            public ResourceLocation getUid() {
+                return LEGENDARY_TABLE_PROVIDER;
+            }
+        }, LegendaryTableBlock.class);
+
+        registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
 				tooltip.add(ModTooltips.TIER.args(1).build());
