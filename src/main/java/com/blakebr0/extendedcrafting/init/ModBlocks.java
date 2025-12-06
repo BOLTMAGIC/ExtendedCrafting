@@ -20,6 +20,7 @@ import com.blakebr0.extendedcrafting.block.EpicAutoTableBlock;
 import com.blakebr0.extendedcrafting.block.FluxAlternatorBlock;
 import com.blakebr0.extendedcrafting.block.FluxCrafterBlock;
 import com.blakebr0.extendedcrafting.block.FrameBlock;
+import com.blakebr0.extendedcrafting.block.LegendaryTableBlock;
 import com.blakebr0.extendedcrafting.block.PedestalBlock;
 import com.blakebr0.extendedcrafting.block.TheUltimateBlock;
 import com.blakebr0.extendedcrafting.block.UltimateAutoTableBlock;
@@ -61,6 +62,7 @@ public final class ModBlocks {
 	public static final RegistryObject<Block> ELITE_TABLE = register("elite_table", EliteTableBlock::new);
 	public static final RegistryObject<Block> ULTIMATE_TABLE = register("ultimate_table", UltimateTableBlock::new);
 	public static final RegistryObject<Block> EPIC_TABLE = register("epic_table", EpicTableBlock::new);
+    public static final RegistryObject<Block> LEGENDARY_TABLE = register("legendary_table", LegendaryTableBlock::new);
 	public static final RegistryObject<Block> BASIC_AUTO_TABLE = register("basic_auto_table", BasicAutoTableBlock::new);
 	public static final RegistryObject<Block> ADVANCED_AUTO_TABLE = register("advanced_auto_table", AdvancedAutoTableBlock::new);
 	public static final RegistryObject<Block> ELITE_AUTO_TABLE = register("elite_auto_table", EliteAutoTableBlock::new);

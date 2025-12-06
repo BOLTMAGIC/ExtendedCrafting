@@ -17,6 +17,7 @@ import com.blakebr0.extendedcrafting.tileentity.EnderCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.EpicTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.FluxAlternatorTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.FluxCrafterTileEntity;
+import com.blakebr0.extendedcrafting.tileentity.LegendaryTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.PedestalTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.TheUltimateBlockTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.UltimateTableTileEntity;
@@ -43,7 +44,8 @@ public final class ModTileEntities {
 	public static final RegistryObject<BlockEntityType<EliteTableTileEntity>> ELITE_TABLE = register("elite_table", EliteTableTileEntity::new, () -> new Block[] { ModBlocks.ELITE_TABLE.get() });
 	public static final RegistryObject<BlockEntityType<UltimateTableTileEntity>> ULTIMATE_TABLE = register("ultimate_table", UltimateTableTileEntity::new, () -> new Block[] { ModBlocks.ULTIMATE_TABLE.get() });
 	public static final RegistryObject<BlockEntityType<EpicTableTileEntity>> EPIC_TABLE = register("epic_table", EpicTableTileEntity::new, () -> new Block[] { ModBlocks.EPIC_TABLE.get() });
-	public static final RegistryObject<BlockEntityType<AutoTableTileEntity.Basic>> BASIC_AUTO_TABLE = register("basic_auto_table", AutoTableTileEntity.Basic::new, () -> new Block[] { ModBlocks.BASIC_AUTO_TABLE.get() });
+    public static final RegistryObject<BlockEntityType<LegendaryTableTileEntity>> LEGENDARY_TABLE = register("legendary_table", LegendaryTableTileEntity::new, () -> new Block[] { ModBlocks.LEGENDARY_TABLE.get() });
+    public static final RegistryObject<BlockEntityType<AutoTableTileEntity.Basic>> BASIC_AUTO_TABLE = register("basic_auto_table", AutoTableTileEntity.Basic::new, () -> new Block[] { ModBlocks.BASIC_AUTO_TABLE.get() });
 	public static final RegistryObject<BlockEntityType<AutoTableTileEntity.Advanced>> ADVANCED_AUTO_TABLE = register("advanced_auto_table", AutoTableTileEntity.Advanced::new, () -> new Block[] { ModBlocks.ADVANCED_AUTO_TABLE.get() });
 	public static final RegistryObject<BlockEntityType<AutoTableTileEntity.Elite>> ELITE_AUTO_TABLE = register("elite_auto_table", AutoTableTileEntity.Elite::new, () -> new Block[] { ModBlocks.ELITE_AUTO_TABLE.get() });
 	public static final RegistryObject<BlockEntityType<AutoTableTileEntity.Ultimate>> ULTIMATE_AUTO_TABLE = register("ultimate_auto_table", AutoTableTileEntity.Ultimate::new, () -> new Block[] { ModBlocks.ULTIMATE_AUTO_TABLE.get() });

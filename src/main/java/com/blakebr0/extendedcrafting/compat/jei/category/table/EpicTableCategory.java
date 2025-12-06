@@ -79,7 +79,8 @@ public class EpicTableCategory implements IRecipeCategory<ITableRecipe> {
 		matrix.popPose();
 	}
 
-	@Override
+	@SuppressWarnings("removal")
+    @Override
 	public List<Component> getTooltipStrings(ITableRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
 		var shapeless = recipe instanceof ShapelessTableRecipe;
 		int sX = (shapeless ? 304 : 324) / 2, sY = 365 / 2;

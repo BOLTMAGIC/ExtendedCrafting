@@ -16,6 +16,7 @@ import com.blakebr0.extendedcrafting.tileentity.EpicTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.EnderCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.FluxCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.UltimateTableTileEntity;
+import com.blakebr0.extendedcrafting.tileentity.LegendaryTableTileEntity;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -93,13 +94,13 @@ public class RecipeMakerItem extends BaseItem {
 				String string;
 				if ("CraftTweaker".equals(type)) {
 					string = isShapeless(stack)
-							? makeShapelessCraftTweakerTableRecipe(inventory, block, outputStack)
-							: makeShapedCraftTweakerTableRecipe(inventory, block, outputStack);
+							? makeShapelessCraftTweakerTableRecipe(inventory, block, outputStack, tile)
+							: makeShapedCraftTweakerTableRecipe(inventory, block, outputStack, tile);
 
 				} else if ("KubeJS".equals(type)) {
 					String json = isShapeless(stack)
-							? makeShapelessDatapackTableRecipe(inventory, block, outputStack)
-							: makeShapedDatapackTableRecipe(inventory, block, outputStack);
+							? makeShapelessDatapackTableRecipe(inventory, block, outputStack, tile)
+							: makeShapedDatapackTableRecipe(inventory, block, outputStack, tile);
 
 					if ("TOO MANY ITEMS".equals(json)) {
 						player.sendSystemMessage(Localizable.of("message.extendedcrafting.max_unique_items_exceeded").args(KEYS.length).build());
@@ -116,8 +117,8 @@ public class RecipeMakerItem extends BaseItem {
 
 				} else {
 					string = isShapeless(stack)
-							? makeShapelessDatapackTableRecipe(inventory, block, outputStack)
-							: makeShapedDatapackTableRecipe(inventory, block, outputStack);
+							? makeShapelessDatapackTableRecipe(inventory, block, outputStack, tile)
+							: makeShapedDatapackTableRecipe(inventory, block, outputStack, tile);
 
 					if ("TOO MANY ITEMS".equals(string)) {
 						player.sendSystemMessage(Localizable.of("message.extendedcrafting.max_unique_items_exceeded").args(KEYS.length).build());
@@ -209,12 +210,12 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shaped CraftTweaker recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapedCraftTweakerTableRecipe(IItemHandler inventory, String type, ItemStack output) {
+	private static String makeShapedCraftTweakerTableRecipe(IItemHandler inventory, String type, ItemStack output, BlockEntity tile) {
 		var string = new StringBuilder();
 		var uuid = UUID.randomUUID();
 
 		string.append("mods.extendedcrafting.").append(type).append(".addShaped(\"").append(uuid).append("\", ");
-		if ("TableCrafting".equals(type)) string.append("0, ");
+		if ("TableCrafting".equals(type)) string.append(getTableTier(tile)).append(", ");
 
 		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
 		var outputItem = output.isEmpty() ? "<item:''>" : (outputId == null ? "<item:minecraft:air>" : "<item:" + outputId + ">");
@@ -288,12 +289,12 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shapeless CraftTweaker recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapelessCraftTweakerTableRecipe(IItemHandler inventory, String type, ItemStack output) {
+	private static String makeShapelessCraftTweakerTableRecipe(IItemHandler inventory, String type, ItemStack output, BlockEntity tile) {
 		var string = new StringBuilder();
 		var uuid = UUID.randomUUID();
 
 		string.append("mods.extendedcrafting.").append(type).append(".addShapeless(\"").append(uuid).append("\", ");
-		if ("TableCrafting".equals(type)) string.append("0, ");
+		if ("TableCrafting".equals(type)) string.append(getTableTier(tile)).append(", ");
 
 		var outputId = ForgeRegistries.ITEMS.getKey(output.getItem());
 		var outputItem = output.isEmpty() ? "<item:''>" : (outputId == null ? "item:minecraft:air" : "item:" + outputId);
@@ -407,7 +408,7 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shaped Datapack recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapedDatapackTableRecipe(IItemHandler inventory, String type, ItemStack output) {
+	private static String makeShapedDatapackTableRecipe(IItemHandler inventory, String type, ItemStack output, BlockEntity tile) {
 		var object = new JsonObject();
 		var tableType = TableType.fromType(type);
 
@@ -490,7 +491,7 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shapeless Datapack recipe for a Table Flux Crafter or Ender Crafter
-	private static String makeShapelessDatapackTableRecipe(IItemHandler inventory, String type, ItemStack output) {
+	private static String makeShapelessDatapackTableRecipe(IItemHandler inventory, String type, ItemStack output, BlockEntity tile) {
 		var object = new JsonObject();
 		var tableType = TableType.fromType(type);
 
@@ -499,6 +500,11 @@ public class RecipeMakerItem extends BaseItem {
 		if (tableType == TableType.FLUX_CRAFTER) {
 			object.addProperty("powerRequired", 100000);
 			object.addProperty("powerRate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
+		}
+
+		if ("TableCrafting".equals(type)) {
+			int tier = getTableTier(tile);
+			object.addProperty("tier", tier);
 		}
 
 		var ingredients = new JsonArray();
@@ -593,8 +599,9 @@ public class RecipeMakerItem extends BaseItem {
 		return tile instanceof BasicTableTileEntity ||
 				tile instanceof AdvancedTableTileEntity ||
 				tile instanceof EliteTableTileEntity ||
-				tile instanceof EpicTableTileEntity ||
 				tile instanceof UltimateTableTileEntity ||
+                tile instanceof EpicTableTileEntity ||
+                tile instanceof LegendaryTableTileEntity ||
 				tile instanceof AutoTableTileEntity ||
 				tile instanceof EnderCrafterTileEntity ||
 				tile instanceof FluxCrafterTileEntity;
@@ -611,7 +618,8 @@ public class RecipeMakerItem extends BaseItem {
 	private static int getGridSlots(IItemHandler inventory) {
 		int slots = inventory.getSlots();
 
-		if (slots >= 121) return 121;
+		if (slots >= 169) return 169;
+		else if (slots >= 121) return 121;
 		else if (slots >= 81) return 81;
 		else if (slots >= 49) return 49;
 		else if (slots >= 25) return 25;
@@ -626,6 +634,16 @@ public class RecipeMakerItem extends BaseItem {
 		}
 
 		return false;
+	}
+
+	private static int getTableTier(BlockEntity tile) {
+		if (tile instanceof BasicTableTileEntity) return 1;
+		if (tile instanceof AdvancedTableTileEntity) return 2;
+		if (tile instanceof EliteTableTileEntity) return 3;
+		if (tile instanceof UltimateTableTileEntity) return 4;
+        if (tile instanceof EpicTableTileEntity) return 5;
+		if (tile instanceof LegendaryTableTileEntity) return 6;
+		return 0; // Fallback
 	}
 
 	private enum TableType {

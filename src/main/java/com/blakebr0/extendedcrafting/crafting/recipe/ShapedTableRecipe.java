@@ -272,7 +272,8 @@ public class ShapedTableRecipe implements ISpecialRecipe, ITableRecipe {
 				 : this.width < 6 && this.height < 6 ? 2
 				 : this.width < 8 && this.height < 8 ? 3
 				 : this.width < 10 && this.height < 10 ? 4
-				 : 5;
+                 : this.width < 12 && this.height < 12 ? 5
+				 : 6;
 	}
 
 	/**
@@ -286,7 +287,8 @@ public class ShapedTableRecipe implements ISpecialRecipe, ITableRecipe {
 				: size < 26 ? 2
 				: size < 50 ? 3
 				: size < 82 ? 4
-				: 5;
+                : size < 122 ? 5
+				: 6;
 	}
 
 	/**
