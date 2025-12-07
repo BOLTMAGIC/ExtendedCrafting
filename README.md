@@ -1,9 +1,9 @@
 # Extended Crafting: Expanded Plus
 
 Adds some new ways to craft items, as well as extra crafting items and utilities.
-Originally forked for use in Monifactory. "What if we tried more tables.
+Originally forked for use in Monifactory. "What if we tried more tables?
 
-And forked again because 11x11 is still not enought for my modpack.
+And forked again because 11x11 is still not enough for my modpack.
 
 ## Download
 - [ExtendedCrafting: Expanded Plus (Curseforge)]()
