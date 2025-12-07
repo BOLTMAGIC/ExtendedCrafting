@@ -194,7 +194,7 @@
   "book.extendedcrafting.entry.combination.page.1": "コンビネーションクラフトは、アイテムを組み合わせて $(italic)特別な$() ものを作り出す、ワールド上に設置するマルチブロックのクラフト方式です。$(br2)このセットアップは中央のクラフティングコアと、その周囲に最大3ブロックの半径で同じ高さに置かれた台座で構成されます。",
   "book.extendedcrafting.entry.combination.page.2": "クラフティングコアには電力を供給する必要があります。$(br2)レシピにはクラフティングコアに置く中央アイテムと、周囲の台座に置く台座アイテムがあります。$(br)クラフティングコアの側面を右クリックすると、進行状況や電力コスト、蓄えられた電力などを確認できます。",
   "book.extendedcrafting.entry.tables": "テーブルクラフト",
-  "book.extendedcrafting.entry.tables.page.1": "この Mod は $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$(), $(bold)9x9$() のクラフティングテーブルを追加します。これらのテーブルは閉じてもインベントリを保持します。",
+  "book.extendedcrafting.entry.tables.page.1": "この Mod は $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$(), $(bold)9x9$(), $(bold)11x11$(), $(bold)13x13$() のクラフティングテーブルを追加します。これらのテーブルは閉じてもインベントリを保持します。",
   "book.extendedcrafting.entry.compression": "圧縮クラフト",
   "book.extendedcrafting.entry.compression.page.1": "量子圧縮は、物質を限界まで圧縮する工程です。これは量子コンプレッサーを使用して行います。$(br2)量子コンプレッサーは大量のアイテムを蓄え圧縮できる動力機械です。投入されたアイテムは内部バッファに格納され、その蓄積量は青いバーで表示されます。",
   "book.extendedcrafting.entry.compression.page.2": "レシピには $(bold)通常$() 触媒が必要です。触媒は左端スロットに置き、消費されません。$(br2)必要なアイテムが揃うとクラフトが開始されます。量子コンプレッサーはクラフト中のみ電力を使用します。$(br2)誤って不要なアイテムを入れた場合は、投入スロット上の排出ボタンで取り出せます。",

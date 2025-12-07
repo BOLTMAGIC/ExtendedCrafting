@@ -201,7 +201,7 @@
   "book.extendedcrafting.entry.combination.page.2": "Bu yapının çalışması için Zanaat Çekirdeğine güç verilmelidir. $(br2)Tariflerde merkezde Zanaat Çekirdeğine konulan bir ana eşya ve çevredeki kaidelere konulan yan eşyalar bulunur. $(br)Zanaat Çekirdeğinin yanına sağ tıklamak, mevcut zanaat işlemi hakkında ilerleme veya güç maliyeti gibi bilgileri, ayrıca içinde ne kadar güç depolandığını gösterir.",
 
   "book.extendedcrafting.entry.tables": "Masa Zanaatı",
-  "book.extendedcrafting.entry.tables.page.1": "Bu mod, $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$() ve $(bold)9x9$() boyutlarında seviyeli zanaat masaları ekler. Bu masalar kapanınca envanterlerini korurlar.",
+  "book.extendedcrafting.entry.tables.page.1": "Bu mod, $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$(), $(bold)9x9$(), $(bold)11x11$() ve $(bold)13x13$() boyutlarında seviyeli zanaat masaları ekler. Bu masalar kapanınca envanterlerini korurlar.",
 
   "book.extendedcrafting.entry.compression": "Sıkıştırma Zanaatı",
   "book.extendedcrafting.entry.compression.page.1": "Kuantum Sıkıştırma, öğelerin aşırı derecede sıkıştırılması işlemidir. Bu işlem bir Kuantum Kompresörü kullanılarak yapılır. $(br2)Kuantum Kompresörü, güç ile çalışan ve aşırı büyük miktarda malzemeyi tutup sıkıştırabilen bir makinedir. Makineye yerleştirilen öğeler, sıkıştırma için kullanılan dahili bir arabelleğe gider. Bu arabellek mavi bir çubuk olarak gösterilir.",
