@@ -139,10 +139,13 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
                         var remaining = recipe.getRemainingItems(recipeInventory);
 
                         for (int i = 0; i < recipeInventory.getContainerSize(); i++) {
-                            if (!remaining.get(i).isEmpty()) {
-                                inventory.setStackInSlot(i, remaining.get(i));
-                            } else {
-                                inventory.setStackInSlot(i, StackHelper.shrink(inventory.getStackInSlot(i), 1, false));
+                            inventory.setStackInSlot(i, StackHelper.shrink(inventory.getStackInSlot(i), 1, false));
+
+                            var remainingStack = remaining.get(i);
+                            var currentStack = inventory.getStackInSlot(i);
+
+                            if (StackHelper.canCombineStacks(remainingStack, currentStack)) {
+                                inventory.setStackInSlot(i, StackHelper.combineStacks(currentStack, remainingStack));
                             }
                         }
 
@@ -685,6 +688,60 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
             return BaseItemStackHandler.create(122, onContentsChanged, builder -> {
                 builder.setOutputSlots(121);
+                builder.setCanInsert((slot, stack) -> false);
+            });
+        }
+    }
+
+    public static class Legendary extends AutoTableTileEntity {
+        private final BaseItemStackHandler inventory;
+        private final BaseEnergyStorage energy;
+        private final TableRecipeStorage recipeStorage;
+
+        public Legendary(BlockPos pos, BlockState state) {
+            super(ModTileEntities.LEGENDARY_AUTO_TABLE.get(), pos, state);
+            this.inventory = createInventoryHandler(this::onContentsChanged);
+            this.recipeStorage = new TableRecipeStorage(170);
+            this.energy = new BaseEnergyStorage(ModConfigs.AUTO_TABLE_POWER_CAPACITY.get() * 16, this::setChangedFast);
+        }
+
+        @Override
+        public BaseItemStackHandler getInventory() {
+            return this.inventory;
+        }
+
+        @Override
+        public Component getDisplayName() {
+            return Localizable.of("container.extendedcrafting.legendary_table").build();
+        }
+
+        @Override
+        public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player player) {
+            return LegendaryAutoTableContainer.create(windowId, playerInventory, this.inventory, this.getBlockPos());
+        }
+
+        @Override
+        public int getProgressRequired() {
+            return ModConfigs.AUTO_TABLE_LEGENDARY_CRAFTING_TIME.get();
+        }
+
+        @Override
+        public TableRecipeStorage getRecipeStorage() {
+            return this.recipeStorage;
+        }
+
+        @Override
+        public BaseEnergyStorage getEnergy() {
+            return this.energy;
+        }
+
+        public static BaseItemStackHandler createInventoryHandler() {
+            return createInventoryHandler(null);
+        }
+
+        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+            return BaseItemStackHandler.create(170, onContentsChanged, builder -> {
+                builder.setOutputSlots(169);
                 builder.setCanInsert((slot, stack) -> false);
             });
         }

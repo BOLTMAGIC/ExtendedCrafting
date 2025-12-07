@@ -20,7 +20,7 @@ public class LegendaryTableScreen extends BaseContainerScreen<LegendaryTableCont
 		var title = this.getTitle().getString();
 
 		gfx.drawString(this.font, title, 8, 6, 4210752, false);
-		gfx.drawString(this.font, this.playerInventoryTitle, 39, this.imageHeight - 94, 4210752, false);
+		gfx.drawString(this.font, this.playerInventoryTitle, 43, this.imageHeight - 94, 4210752, false);
 	}
 
 	@Override

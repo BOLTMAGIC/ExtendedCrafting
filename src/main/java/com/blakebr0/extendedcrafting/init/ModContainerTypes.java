@@ -31,6 +31,7 @@ public final class ModContainerTypes {
     public static final RegistryObject<MenuType<EliteAutoTableContainer>> ELITE_AUTO_TABLE = register("elite_auto_table", () -> new MenuType<>((IContainerFactory<EliteAutoTableContainer>) EliteAutoTableContainer::create, FeatureFlagSet.of()));
     public static final RegistryObject<MenuType<UltimateAutoTableContainer>> ULTIMATE_AUTO_TABLE = register("ultimate_auto_table", () -> new MenuType<>((IContainerFactory<UltimateAutoTableContainer>) UltimateAutoTableContainer::create, FeatureFlagSet.of()));
     public static final RegistryObject<MenuType<EpicAutoTableContainer>> EPIC_AUTO_TABLE = register("epic_auto_table", () -> new MenuType<>((IContainerFactory<EpicAutoTableContainer>) EpicAutoTableContainer::create, FeatureFlagSet.of()));
+    public static final RegistryObject<MenuType<LegendaryAutoTableContainer>> LEGENDARY_AUTO_TABLE = register("legendary_auto_table", () -> new MenuType<>((IContainerFactory<LegendaryAutoTableContainer>) LegendaryAutoTableContainer::create, FeatureFlagSet.of()));
     public static final RegistryObject<MenuType<CompressorContainer>> COMPRESSOR = register("compressor", () -> new MenuType<>((IContainerFactory<CompressorContainer>) CompressorContainer::create, FeatureFlagSet.of()));
     public static final RegistryObject<MenuType<EnderCrafterContainer>> ENDER_CRAFTER = register("ender_crafter", () -> new MenuType<>((IContainerFactory<EnderCrafterContainer>) EnderCrafterContainer::create, FeatureFlagSet.of()));
     public static final RegistryObject<MenuType<AutoEnderCrafterContainer>> AUTO_ENDER_CRAFTER = register("auto_ender_crafter", () -> new MenuType<>((IContainerFactory<AutoEnderCrafterContainer>) AutoEnderCrafterContainer::create, FeatureFlagSet.of()));
@@ -52,6 +53,7 @@ public final class ModContainerTypes {
         ELITE_AUTO_TABLE.ifPresent(container -> MenuScreens.register(container, EliteAutoTableScreen::new));
         ULTIMATE_AUTO_TABLE.ifPresent(container -> MenuScreens.register(container, UltimateAutoTableScreen::new));
         EPIC_AUTO_TABLE.ifPresent(container -> MenuScreens.register(container, EpicAutoTableScreen::new));
+        LEGENDARY_AUTO_TABLE.ifPresent(container -> MenuScreens.register(container, LegendaryAutoTableScreen::new));
         COMPRESSOR.ifPresent(container -> MenuScreens.register(container, CompressorScreen::new));
         ENDER_CRAFTER.ifPresent(container -> MenuScreens.register(container, EnderCrafterScreen::new));
         AUTO_ENDER_CRAFTER.ifPresent(container -> MenuScreens.register(container, AutoEnderCrafterScreen::new));
