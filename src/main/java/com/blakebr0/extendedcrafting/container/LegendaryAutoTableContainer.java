@@ -3,10 +3,11 @@ package com.blakebr0.extendedcrafting.container;
 import com.blakebr0.cucumber.container.BaseContainerMenu;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
+import com.blakebr0.extendedcrafting.container.slot.AutoTableOutputSlot;
 import com.blakebr0.extendedcrafting.container.slot.TableOutputSlot;
 import com.blakebr0.extendedcrafting.init.ModContainerTypes;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
-import com.blakebr0.extendedcrafting.tileentity.EpicTableTileEntity;
+import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
@@ -18,38 +19,40 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class EpicTableContainer extends BaseContainerMenu {
+public class LegendaryAutoTableContainer extends BaseContainerMenu {
 	private final Level level;
 	private final Container result;
 
-	private EpicTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
-		this(type, id, playerInventory, EpicTableTileEntity.createInventoryHandler(), buffer.readBlockPos());
+	private LegendaryAutoTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
+		this(type, id, playerInventory, AutoTableTileEntity.Legendary.createInventoryHandler(), buffer.readBlockPos());
 	}
 
-	private EpicTableContainer(MenuType<?> type, int id, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
+	private LegendaryAutoTableContainer(MenuType<?> type, int id, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
 		super(type, id, pos);
 		this.level = playerInventory.player.level();
 		this.result = new ResultContainer();
 
-		var matrix = new ExtendedCraftingInventory(this, inventory, 11);
+		var matrix = new ExtendedCraftingInventory(this, inventory, 13, true);
 
-		this.addSlot(new TableOutputSlot(this, matrix, this.result, 0, 242, 107));
-		
+		this.addSlot(new TableOutputSlot(this, matrix, this.result, 0, 297, 126));
+
 		int i, j;
-		for (i = 0; i < 11; i++) {
-			for (j = 0; j < 11; j++) {
-				this.addSlot(new Slot(matrix, j + i * 11, 8 + j * 18, 18 + i * 18));
+		for (i = 0; i < 13; i++) {
+			for (j = 0; j < 13; j++) {
+				this.addSlot(new Slot(matrix, j + i * 13, 27 + j * 18, 18 + i * 18));
 			}
 		}
 
+		this.addSlot(new AutoTableOutputSlot(this, matrix, inventory, 169, 297, 170));
+
 		for (i = 0; i < 3; i++) {
 			for (j = 0; j < 9; j++) {
-				this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 57 + j * 18, 232 + i * 18));
+				this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 63 + j * 18, 268 + i * 18));
 			}
 		}
 
 		for (j = 0; j < 9; j++) {
-			this.addSlot(new Slot(playerInventory, j, 57 + j * 18, 290));
+			this.addSlot(new Slot(playerInventory, j, 63 + j * 18, 326));
 		}
 
 		this.slotsChanged(matrix);
@@ -57,9 +60,9 @@ public class EpicTableContainer extends BaseContainerMenu {
 
 	@Override
 	public void slotsChanged(Container matrix) {
-        if (this.level.isClientSide) {
-            return;
-        }
+		if (this.level.isClientSide) {
+			return;
+		}
 		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, this.level);
 
 		if (recipe.isPresent()) {
@@ -81,17 +84,17 @@ public class EpicTableContainer extends BaseContainerMenu {
 			var itemstack1 = slot.getItem();
 			itemstack = itemstack1.copy();
 
-			if (slotNumber == 0) {
-				if (!this.moveItemStackTo(itemstack1, 122, 158, true)) {
+			if (slotNumber == 0 || slotNumber == 170) {
+				if (!this.moveItemStackTo(itemstack1, 171, 207, true)) {
 					return ItemStack.EMPTY;
 				}
 
 				slot.onQuickCraft(itemstack1, itemstack);
-			} else if (slotNumber >= 122 && slotNumber < 158) {
-				if (!this.moveItemStackTo(itemstack1, 1, 122, false)) {
+			} else if (slotNumber >= 171 && slotNumber < 207) {
+				if (!this.moveItemStackTo(itemstack1, 1, 170, false)) {
 					return ItemStack.EMPTY;
 				}
-			} else if (!this.moveItemStackTo(itemstack1, 122, 158, false)) {
+			} else if (!this.moveItemStackTo(itemstack1, 171, 207, false)) {
 				return ItemStack.EMPTY;
 			}
 
@@ -111,11 +114,11 @@ public class EpicTableContainer extends BaseContainerMenu {
 		return itemstack;
 	}
 
-	public static EpicTableContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new EpicTableContainer(ModContainerTypes.EPIC_TABLE.get(), windowId, playerInventory, buffer);
+	public static LegendaryAutoTableContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
+		return new LegendaryAutoTableContainer(ModContainerTypes.LEGENDARY_AUTO_TABLE.get(), windowId, playerInventory, buffer);
 	}
 
-	public static EpicTableContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new EpicTableContainer(ModContainerTypes.EPIC_TABLE.get(), windowId, playerInventory, inventory, pos);
+	public static LegendaryAutoTableContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
+		return new LegendaryAutoTableContainer(ModContainerTypes.LEGENDARY_AUTO_TABLE.get(), windowId, playerInventory, inventory, pos);
 	}
 }
