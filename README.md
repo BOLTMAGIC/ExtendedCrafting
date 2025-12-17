@@ -3,10 +3,7 @@
 Adds some new ways to craft items, as well as extra crafting items and utilities.
 Originally forked for use in Monifactory. "What if we tried more tables?
 
-And forked again because 11x11 is still not enough for my modpack.
-
 ## Download
-- [ExtendedCrafting: Expanded Plus (Curseforge)]()
 - [ExtendedCrafting: Monifactory Edition (Curseforge)](https://www.curseforge.com/minecraft/mc-mods/extended-crafting-monifactory-edition)
 - [BlakeBr0's Cucumber Library (required dependency)](https://www.curseforge.com/minecraft/mc-mods/cucumber)
 
