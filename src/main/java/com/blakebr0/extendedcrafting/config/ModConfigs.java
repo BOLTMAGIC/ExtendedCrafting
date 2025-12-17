@@ -38,7 +38,6 @@ public final class ModConfigs {
 	public static final ForgeConfigSpec.IntValue AUTO_TABLE_ELITE_CRAFTING_TIME;
 	public static final ForgeConfigSpec.IntValue AUTO_TABLE_ULTIMATE_CRAFTING_TIME;
 	public static final ForgeConfigSpec.IntValue AUTO_TABLE_EPIC_CRAFTING_TIME;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_LEGENDARY_CRAFTING_TIME;
 
 	public static final ForgeConfigSpec.BooleanValue ENABLE_COMPRESSOR;
 	public static final ForgeConfigSpec.IntValue COMPRESSOR_POWER_CAPACITY;
@@ -125,9 +124,6 @@ public final class ModConfigs {
 		AUTO_TABLE_EPIC_CRAFTING_TIME = common
 				.comment("How many ticks the Epic Auto Table takes to craft")
 				.defineInRange("autoTableEpicCraftTime", 8, 1, Integer.MAX_VALUE);
-		AUTO_TABLE_LEGENDARY_CRAFTING_TIME = common
-				.comment("How many ticks the Legendary Auto Table takes to craft")
-				.defineInRange("autoTableLegendaryCraftTime", 8, 1, Integer.MAX_VALUE);
 		common.pop();
 
 		common.comment("Settings for the Quantum Compressor.").push("Quantum Compression");

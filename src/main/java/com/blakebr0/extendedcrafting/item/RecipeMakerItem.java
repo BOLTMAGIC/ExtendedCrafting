@@ -16,7 +16,6 @@ import com.blakebr0.extendedcrafting.tileentity.EpicTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.EnderCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.FluxCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.UltimateTableTileEntity;
-import com.blakebr0.extendedcrafting.tileentity.LegendaryTableTileEntity;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -147,7 +146,7 @@ public class RecipeMakerItem extends BaseItem {
 				if ("CraftTweaker".equals(type)) {
 					string = makeCraftTweakerCombinationRecipe(core);
 				} else if ("KubeJS".equals(type)) {
-					String json = makeDatapackCombinationRecipe(core, outputStack);
+				 String json = makeDatapackCombinationRecipe(core, outputStack);
                     json = getString(json);
                     String comment = outputItemId.isEmpty() ? "" : "\n  // " + outputItemId;
 					String idPart = outputItemId.isEmpty() ? "" : "\n  .id('" + outputItemId + "');";
@@ -601,7 +600,6 @@ public class RecipeMakerItem extends BaseItem {
 				tile instanceof EliteTableTileEntity ||
 				tile instanceof UltimateTableTileEntity ||
                 tile instanceof EpicTableTileEntity ||
-                tile instanceof LegendaryTableTileEntity ||
 				tile instanceof AutoTableTileEntity ||
 				tile instanceof EnderCrafterTileEntity ||
 				tile instanceof FluxCrafterTileEntity;
@@ -618,8 +616,7 @@ public class RecipeMakerItem extends BaseItem {
 	private static int getGridSlots(IItemHandler inventory) {
 		int slots = inventory.getSlots();
 
-		if (slots >= 169) return 169;
-		else if (slots >= 121) return 121;
+		if (slots >= 121) return 121;
 		else if (slots >= 81) return 81;
 		else if (slots >= 49) return 49;
 		else if (slots >= 25) return 25;
@@ -642,7 +639,6 @@ public class RecipeMakerItem extends BaseItem {
 		if (tile instanceof EliteTableTileEntity) return 3;
 		if (tile instanceof UltimateTableTileEntity) return 4;
         if (tile instanceof EpicTableTileEntity) return 5;
-		if (tile instanceof LegendaryTableTileEntity) return 6;
 		return 0; // Fallback
 	}
 

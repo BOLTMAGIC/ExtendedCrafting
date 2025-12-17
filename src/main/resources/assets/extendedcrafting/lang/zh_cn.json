@@ -179,7 +179,7 @@
   "book.extendedcrafting.entry.combination.page.1": "组合合成是一个架设在世界上的多方块结构，使得物品组合在一起成为$(italic)特殊物品$()。$(br2)此结构在中央摆放一个合成核心且在其周围摆放基座。基座能放在合成核心半径三格范围内任意位置，且必须在同一高度。",
   "book.extendedcrafting.entry.combination.page.2": "为了使结构起作用，必须为合成核心提供能量。$(br2)配方中央位置的物品放在合成核心上，需放基座上的物品则放在其附近的基座上。$(br)右击合成核心的侧边会显示当前合成的信息，例如进度和能量消耗，以及其内部能量储量。",
   "book.extendedcrafting.entry.tables": "工作台合成",
-  "book.extendedcrafting.entry.tables.page.1": "本mod添加了$(bold)3x3$()，$(bold)5x5$()，$(bold)7x7$()，$(bold)9x9$()，$(bold)11x11$()，和$(bold)13x13$()大小的不同等级的工作台。关闭工作台时将会保存在其内部空间的物品。",
+  "book.extendedcrafting.entry.tables.page.1": "本mod添加了$(bold)3x3$()，$(bold)5x5$()，$(bold)7x7$()，$(bold)9x9$()，和$$(bold)11x11$() 大小的不同等级的工作台。关闭工作台时将会保存在其内部空间的物品。",
   "book.extendedcrafting.entry.compression": "压缩合成",
   "book.extendedcrafting.entry.compression.page.1": "量子压缩是将物品压缩得有点多的过程。使用量子压缩机即可进行压缩。$(br2)量子压缩机是一个需要能量的机器，它能容纳及对极大数量的材料进行压缩。放在量子压缩机的物品将进入到其内部缓存槽以用于压缩。缓存槽会以蓝色的条状物显示。",
   "book.extendedcrafting.entry.compression.page.2": "每个配方$(bold)一般$()都需要一个催化剂。催化剂需被放置在最左边的槽位中，它不会被消耗。$(br2)一旦缓存槽有足够的材料，机器将会开始制作物品。量子压缩机只会在合成的过程中使用能量。$(br2)假如你将物品错误放入压缩机，你只需点击在输入槽上方的弹出按钮即可拿回物品。",

@@ -43,13 +43,11 @@ public final class ModCreativeModeTabs {
                 output.accept(ModBlocks.ELITE_TABLE, ModFeatureFlags.TABLES);
                 output.accept(ModBlocks.ULTIMATE_TABLE, ModFeatureFlags.TABLES);
                 output.accept(ModBlocks.EPIC_TABLE, ModFeatureFlags.TABLES);
-                output.accept(ModBlocks.LEGENDARY_TABLE, ModFeatureFlags.TABLES);
                 output.accept(ModBlocks.BASIC_AUTO_TABLE, ModFeatureFlags.TABLES, ModFeatureFlags.AUTO_TABLES);
                 output.accept(ModBlocks.ADVANCED_AUTO_TABLE, ModFeatureFlags.TABLES, ModFeatureFlags.AUTO_TABLES);
                 output.accept(ModBlocks.ELITE_AUTO_TABLE, ModFeatureFlags.TABLES, ModFeatureFlags.AUTO_TABLES);
                 output.accept(ModBlocks.ULTIMATE_AUTO_TABLE, ModFeatureFlags.TABLES, ModFeatureFlags.AUTO_TABLES);
                 output.accept(ModBlocks.EPIC_AUTO_TABLE, ModFeatureFlags.TABLES, ModFeatureFlags.AUTO_TABLES);
-                output.accept(ModBlocks.LEGENDARY_AUTO_TABLE, ModFeatureFlags.TABLES, ModFeatureFlags.AUTO_TABLES);
                 output.accept(ModBlocks.COMPRESSOR, ModFeatureFlags.COMPRESSOR);
                 output.accept(ModBlocks.ENDER_ALTERNATOR, ModFeatureFlags.ENDER_CRAFTER);
                 output.accept(ModBlocks.ENDER_CRAFTER, ModFeatureFlags.ENDER_CRAFTER);
