@@ -28,10 +28,12 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class CompressorTileEntity extends BaseInventoryTileEntity implements MenuProvider {
 	private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
 	private final BaseItemStackHandler inventory;
@@ -85,7 +87,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 	}
 
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
+	public <T> @NotNull LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
 		if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
 			return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
 		}
@@ -94,12 +96,12 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 	}
 
 	@Override
-	public Component getDisplayName() {
+	public @NotNull Component getDisplayName() {
 		return Localizable.of("container.extendedcrafting.compressor").build();
 	}
 
 	@Override
-	public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player playerEntity) {
+	public AbstractContainerMenu createMenu(int windowId, @NotNull Inventory playerInventory, @NotNull Player playerEntity) {
 		return CompressorContainer.create(windowId, playerInventory, this.inventory, this.getBlockPos());
 	}
 

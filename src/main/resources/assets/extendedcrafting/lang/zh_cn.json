@@ -119,6 +119,7 @@
   "message.extendedcrafting.max_unique_items_exceeded": "在成型的数据包配方中，你最多只能有%s个唯一项目。",
   "message.extendedcrafting.no_items_in_grid": "网格中没有可复制的物品。",
   "message.extendedcrafting.no_output_item_warning": "第一个快捷栏槽位中没有物品。你可以将输出物品放入第一个快捷栏槽位，以便将其包含在复制的配方中。",
+  "message.extendedcrafting.remove_output_items": "无法切换弹出模式：输出槽中有物品。请先移除输出物品。",
 
 
   "jei.category.extendedcrafting.combination": "组合合成",

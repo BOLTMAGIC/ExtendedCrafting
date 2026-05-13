@@ -129,6 +129,7 @@
   "message.extendedcrafting.max_unique_items_exceeded": "형태 있는 데이터팩 레시피는 최대 (%s)개의 고유 아이템만 사용할 수 있습니다.",
   "message.extendedcrafting.no_items_in_grid": "복사할 아이템이 그리드에 없습니다.",
   "message.extendedcrafting.no_output_item_warning": "첫 번째 핫바 슬롯에 아이템이 없습니다. 출력 아이템을 포함하려면 출력 아이템을 첫 번째 슬롯에 넣으세요.",
+  "message.extendedcrafting.remove_output_items": "출력 슬롯에 아이템이 있는 동안 배출 모드를 전환할 수 없습니다. 먼저 출력 아이템을 제거하세요.",
 
   "jei.category.extendedcrafting.combination": "조합 제작",
   "jei.category.extendedcrafting.basic_crafting": "기본 제작",

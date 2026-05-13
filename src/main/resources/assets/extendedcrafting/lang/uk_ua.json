@@ -104,6 +104,7 @@
   "message.extendedcrafting.max_unique_items_exceeded": "Ви можете мати максимум (%s) унікальних предметів у формованому рецепті датапака.",
   "message.extendedcrafting.no_items_in_grid": "У сітці немає елементів для копіювання.",
   "message.extendedcrafting.no_output_item_warning": "У першому слоті швидкого доступу немає предмета. Ви можете покласти вихідний предмет у перший слот, щоб включити його в скопійований рецепт.",
+  "message.extendedcrafting.remove_output_items": "Неможливо переключити режим викиду, поки у слоті виводу є предмети. Будь ласка, спочатку приберіть предмети з виходу.",
 
 
   "jei.category.extendedcrafting.combination": "Комбіноване майстрування",

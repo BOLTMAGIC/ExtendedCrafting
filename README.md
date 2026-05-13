@@ -1,4 +1,4 @@
-# Extended Crafting: Expanded Plus
+# Extended Crafting: Expanded Reforked
 
 Adds some new ways to craft items, as well as extra crafting items and utilities.
 Originally forked for use in Monifactory. "What if we tried more tables?

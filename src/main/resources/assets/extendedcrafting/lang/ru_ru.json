@@ -100,6 +100,7 @@
   "message.extendedcrafting.max_unique_items_exceeded": "Вы можете иметь максимум (%s) однотипных предметов в сформированном рецепте из дата-пака.",
   "message.extendedcrafting.no_items_in_grid": "В сетке нет элементов для копирования.",
   "message.extendedcrafting.no_output_item_warning": "В первом слоте быстрого доступа нет предмета. Вы можете положить выходной предмет в первый слот, чтобы включить его в копируемый рецепт.",
+  "message.extendedcrafting.remove_output_items": "Нельзя переключить режим вытряхивания — в выходном слоте есть предметы. Пожалуйста, сначала уберите предметы из выхода.",
 
   "jei.category.extendedcrafting.combination": "Комбинированное создание",
   "jei.category.extendedcrafting.basic_crafting": "Создание на базовом верстаке",

@@ -133,6 +133,7 @@
   "message.extendedcrafting.max_unique_items_exceeded": "Şekilli bir datapack tarifinde en fazla (%s) benzersiz öğe kullanabilirsiniz.",
   "message.extendedcrafting.no_items_in_grid": "Kopyalanacak ızgarada öğe yok.",
   "message.extendedcrafting.no_output_item_warning": "Birinci hızlı erişim slotunda öğe yok. Kopyalanacak tarifte çıktı olarak kullanılmasını istiyorsanız çıktı öğesini ilk hızlı erişim slotuna koyabilirsiniz.",
+  "message.extendedcrafting.remove_output_items": "Çıkartma modu, çıktı yuvasında öğeler varken açılamaz. Lütfen önce çıktı öğelerini kaldırın.",
 
   "jei.category.extendedcrafting.combination": "Kombinasyon Zanaatı",
   "jei.category.extendedcrafting.basic_crafting": "Temel Zanaat",

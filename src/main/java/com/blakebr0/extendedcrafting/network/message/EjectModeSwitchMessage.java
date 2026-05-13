@@ -38,8 +38,15 @@ public class EjectModeSwitchMessage extends Message<EjectModeSwitchMessage> {
                 var level = player.getCommandSenderWorld();
                 var tile = level.getBlockEntity(message.pos);
 
-                if (tile instanceof CompressorTileEntity compressor)
-                    compressor.toggleEjecting();
+                if (tile instanceof CompressorTileEntity compressor) {
+                    var output = compressor.getInventory().getStackInSlot(0);
+                    if (!output.isEmpty()) {
+                        // Tell the player to remove output items before toggling eject (show as action bar)
+                        player.displayClientMessage(com.blakebr0.cucumber.util.Localizable.of("message.extendedcrafting.remove_output_items").build(), true);
+                    } else {
+                        compressor.toggleEjecting();
+                    }
+                }
             }
         });
 

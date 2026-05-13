@@ -129,6 +129,7 @@
   "message.extendedcrafting.max_unique_items_exceeded": "シェイプドデータパックレシピでは最大 (%s) 種類のアイテムしか使用できません。",
   "message.extendedcrafting.no_items_in_grid": "グリッドにアイテムがありません。",
   "message.extendedcrafting.no_output_item_warning": "ホットバーの1番スロットにアイテムがありません。コピーしたレシピに出力アイテムを含めるためには、1番スロットに出力アイテムを置いてください。",
+  "message.extendedcrafting.remove_output_items": "出力にアイテムがある間は排出モードを切り替えられません。まず出力アイテムを取り除いてください。",
 
   "jei.category.extendedcrafting.combination": "コンビネーションクラフト",
   "jei.category.extendedcrafting.basic_crafting": "基本クラフト",
