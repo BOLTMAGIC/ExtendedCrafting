@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.7",
+  "package": "vhtablefix.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ServerboundContainerClickPacketMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+

@@ -34,3 +34,20 @@ license="MIT"
         versionRange="[7.0.4,)"
         ordering="NONE"
         side="BOTH"
+        [[mods]]
+            # Small helper mod included in this JAR to raise FriendlyByteBuf changed-slots decode limit
+            issueTrackerURL=""
+            modId="vhtablefix"
+            version="1.0.0"
+            displayName="VH Table Fix"
+            authors="ValhallaMc/ Alp"
+            description='''
+            Raises the ServerboundContainerClickPacket changed-slots decode cap so large Extended Crafting tables don't kick clients.
+            '''
+
+            [[dependencies.vhtablefix]]
+                modId="forge"
+                mandatory=true
+                versionRange="[47.4.0,)"
+                ordering="NONE"
+                side="SERVER"

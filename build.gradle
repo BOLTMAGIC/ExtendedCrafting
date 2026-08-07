@@ -6,7 +6,7 @@ plugins {
     id 'org.spongepowered.mixin' version '0.7.+'
 }
 
-version = '1.20.1-6.1.7'
+version = '1.20.1-6.1.8'
 group = 'com.witherschat.extendedcrafting'
 
 base {
@@ -41,6 +41,7 @@ minecraft {
             workingDirectory project.file('run')
 
             arg '-mixin.config=cucumber.mixins.json'
+            arg '-mixin.config=vhtablefix.mixins.json'
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
@@ -64,6 +65,7 @@ minecraft {
             workingDirectory project.file('run')
 
             arg '-mixin.config=cucumber.mixins.json'
+            arg '-mixin.config=vhtablefix.mixins.json'
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
