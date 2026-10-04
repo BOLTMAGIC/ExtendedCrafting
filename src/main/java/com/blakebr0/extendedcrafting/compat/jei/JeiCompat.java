@@ -234,7 +234,7 @@ public final class JeiCompat implements IModPlugin {
 			registration.addRecipeClickArea(EliteTableScreen.class, 139, 72, 21, 14, EliteTableCategory.RECIPE_TYPE);
 			registration.addRecipeClickArea(UltimateTableScreen.class, 174, 90, 21, 14, UltimateTableCategory.RECIPE_TYPE);
 			registration.addRecipeClickArea(EpicTableScreen.class, 210, 108, 21, 14, EpicTableCategory.RECIPE_TYPE);
-            registration.addRecipeClickArea(LegendaryTableScreen.class, 210, 108, 21, 14, LegendaryTableCategory.RECIPE_TYPE);
+            registration.addRecipeClickArea(LegendaryTableScreen.class, 246, 126, 21, 14, LegendaryTableCategory.RECIPE_TYPE);
 
 			if (ModConfigs.ENABLE_AUTO_TABLES.get()) {
 				registration.addRecipeClickArea(BasicAutoTableScreen.class, 97, 36, 21, 14, BasicTableCategory.RECIPE_TYPE);
@@ -242,7 +242,7 @@ public final class JeiCompat implements IModPlugin {
 				registration.addRecipeClickArea(EliteAutoTableScreen.class, 158, 72, 21, 14, EliteTableCategory.RECIPE_TYPE);
 				registration.addRecipeClickArea(UltimateAutoTableScreen.class, 193, 90, 21, 14, UltimateTableCategory.RECIPE_TYPE);
 				registration.addRecipeClickArea(EpicAutoTableScreen.class, 237, 108, 21, 14, EpicTableCategory.RECIPE_TYPE);
-                registration.addRecipeClickArea(LegendaryAutoTableScreen.class, 237, 108, 21, 14, LegendaryTableCategory.RECIPE_TYPE);
+                registration.addRecipeClickArea(LegendaryAutoTableScreen.class, 265, 126, 21, 14, LegendaryTableCategory.RECIPE_TYPE);
 			}
 		}
 
