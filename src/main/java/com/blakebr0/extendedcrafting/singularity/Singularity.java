@@ -1,53 +1,62 @@
 package com.blakebr0.extendedcrafting.singularity;
 
-import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
-import net.minecraft.network.FriendlyByteBuf;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.crafting.Ingredient;
 
+import java.util.Optional;
+
 public class Singularity {
-    private final ResourceLocation id;
+    public static final MapCodec<Singularity> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
+            builder.group(
+                    Codec.STRING.fieldOf("name").forGetter(singularity -> singularity.name),
+                    ExtraCodecs.STRING_RGB_COLOR.fieldOf("overlay_color").forGetter(singularity -> singularity.overlayColor),
+                    ExtraCodecs.STRING_RGB_COLOR.fieldOf("underlay_color").forGetter(singularity -> singularity.underlayColor),
+                    Ingredient.CODEC.optionalFieldOf("ingredient").forGetter(singularity -> singularity.ingredient),
+                    Codec.INT.optionalFieldOf("ingredient_count", ModConfigs.SINGULARITY_INGREDIENTS_REQUIRED.get()).forGetter(singularity -> singularity.ingredientCount),
+                    Codec.BOOL.optionalFieldOf("in_ultimate_singularity", true).forGetter(singularity -> singularity.inUltimateSingularity),
+                    Codec.BOOL.optionalFieldOf("enabled", true).forGetter(singularity -> singularity.enabled)
+            ).apply(builder, Singularity::new)
+    );
+    public static final Codec<Singularity> CODEC = MAP_CODEC.codec();
+    public static final StreamCodec<RegistryFriendlyByteBuf, Singularity> STREAM_CODEC = StreamCodec.of(
+            Singularity::toNetwork, Singularity::fromNetwork
+    );
+
     private final String name;
-    private final int[] colors;
-    private final String tag;
+    private final int overlayColor;
+    private final int underlayColor;
     private final int ingredientCount;
     private final boolean inUltimateSingularity;
-    private Ingredient ingredient;
-    private boolean enabled = true;
+    private final Optional<Ingredient> ingredient;
+    private final boolean enabled;
 
-    public Singularity(ResourceLocation id, String name, int[] colors, Ingredient ingredient, int ingredientCount, boolean inUltimateSingularity) {
-        this.id = id;
+    private Identifier id;
+
+    public Singularity(String name, int overlayColor, int underlayColor, Optional<Ingredient> ingredient, int ingredientCount, boolean inUltimateSingularity, boolean enabled) {
         this.name = name;
-        this.colors = colors;
+        this.overlayColor = ARGB.opaque(overlayColor);
+        this.underlayColor = ARGB.opaque(underlayColor);
         this.ingredient = ingredient;
-        this.tag = null;
         this.ingredientCount = ingredientCount;
         this.inUltimateSingularity = inUltimateSingularity;
+        this.enabled = enabled;
     }
 
-    public Singularity(ResourceLocation id, String name, int[] colors, Ingredient ingredient) {
-        this(id, name, colors, ingredient, -1, true);
-    }
-
-    public Singularity(ResourceLocation id, String name, int[] colors, String tag, int ingredientCount, boolean inUltimateSingularity) {
-        this.id = id;
-        this.name = name;
-        this.colors = colors;
-        this.ingredient = Ingredient.EMPTY;
-        this.tag = tag;
-        this.ingredientCount = ingredientCount;
-        this.inUltimateSingularity = inUltimateSingularity;
-    }
-
-    public Singularity(ResourceLocation id, String name, int[] colors, String tag) {
-        this(id, name, colors, tag, -1, true);
-    }
-
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return this.id;
+    }
+
+    public void setId(Identifier id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -55,36 +64,23 @@ public class Singularity {
     }
 
     public int getOverlayColor() {
-        return this.colors[0];
+        return this.overlayColor;
     }
 
     public int getUnderlayColor() {
-        return this.colors[1];
+        return this.underlayColor;
     }
 
-    public String getTag() {
-        return this.tag;
-    }
-
-    public Ingredient getIngredient() {
-        if (this.tag != null && this.ingredient == Ingredient.EMPTY) {
-            var tag = ItemTags.create(new ResourceLocation(this.tag));
-            this.ingredient = Ingredient.of(tag);
-        }
-
+    public Optional<Ingredient> getIngredient() {
         return this.ingredient;
     }
 
     public int getIngredientCount() {
-        if (this.ingredientCount == -1) {
-            return ModConfigs.SINGULARITY_MATERIALS_REQUIRED.get();
-        }
-
         return this.ingredientCount;
     }
 
     public Component getDisplayName() {
-        return Localizable.of(this.name).build();
+        return Component.translatable(this.name);
     }
 
     public boolean isInUltimateSingularity() {
@@ -95,53 +91,34 @@ public class Singularity {
         return this.enabled;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeResourceLocation(this.id);
+    public void write(RegistryFriendlyByteBuf buffer) {
+        buffer.writeIdentifier(this.id);
         buffer.writeUtf(this.name);
-        buffer.writeVarIntArray(this.colors);
-        buffer.writeBoolean(this.tag != null);
-
-        if (this.tag != null) {
-            buffer.writeUtf(this.tag);
-        } else {
-            this.ingredient.toNetwork(buffer);
-        }
-
-        buffer.writeVarInt(this.getIngredientCount());
+        buffer.writeVarInt(this.overlayColor);
+        buffer.writeVarInt(this.underlayColor);
+        Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.encode(buffer, this.ingredient);
+        buffer.writeVarInt(this.ingredientCount);
         buffer.writeBoolean(this.inUltimateSingularity);
         buffer.writeBoolean(this.enabled);
     }
 
-    public static Singularity read(FriendlyByteBuf buffer) {
-        var id = buffer.readResourceLocation();
+    public static void toNetwork(RegistryFriendlyByteBuf buffer, Singularity singularity) {
+        singularity.write(buffer);
+    }
+
+    public static Singularity fromNetwork(RegistryFriendlyByteBuf buffer) {
+        var id = buffer.readIdentifier();
         var name = buffer.readUtf();
-        int[] colors = buffer.readVarIntArray();
-        var isTagIngredient = buffer.readBoolean();
-
-        String tag = null;
-        var ingredient = Ingredient.EMPTY;
-
-        if (isTagIngredient) {
-            tag = buffer.readUtf();
-        } else {
-            ingredient = Ingredient.fromNetwork(buffer);
-        }
-
+        var overlayColor = buffer.readVarInt();
+        var underlayColor = buffer.readVarInt();
+        var ingredient = Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.decode(buffer);
         int ingredientCount = buffer.readVarInt();
         var isInUltimateSingularity = buffer.readBoolean();
+        var enabled = buffer.readBoolean();
 
-        Singularity singularity;
-        if (isTagIngredient) {
-            singularity = new Singularity(id, name, colors, tag, ingredientCount, isInUltimateSingularity);
-        } else {
-            singularity = new Singularity(id, name, colors, ingredient, ingredientCount, isInUltimateSingularity);
-        }
+        var singularity = new Singularity(name, overlayColor, underlayColor, ingredient, ingredientCount, isInUltimateSingularity, enabled);
 
-        singularity.enabled = buffer.readBoolean();
+        singularity.setId(id);
 
         return singularity;
     }

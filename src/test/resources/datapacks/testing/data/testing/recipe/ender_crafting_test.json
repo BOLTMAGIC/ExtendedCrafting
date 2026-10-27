@@ -1,0 +1,14 @@
+{
+  "type": "extendedcrafting:shaped_ender_crafter",
+  "pattern": [
+    "XXX",
+    "X X",
+    "XXX"
+  ],
+  "key": {
+    "X": "#c:ingots/gold"
+  },
+  "result": {
+    "id": "minecraft:apple"
+  }
+}

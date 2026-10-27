@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BSB",
+    "CTC",
+    "BSB"
+  ],
+  "key": {
+    "T": "extendedcrafting:legendary_table",
+    "C": "extendedcrafting:crystaltine_component",
+    "B": "extendedcrafting:black_iron_ingot",
+    "S": "extendedcrafting:redstone_component"
+  },
+  "result": {
+    "id": "extendedcrafting:legendary_auto_table"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:tables"
+    },
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:auto_tables"
+    }
+  ]
+}

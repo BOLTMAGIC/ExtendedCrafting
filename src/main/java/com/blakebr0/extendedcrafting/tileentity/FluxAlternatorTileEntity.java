@@ -1,66 +1,60 @@
 package com.blakebr0.extendedcrafting.tileentity;
 
-import com.blakebr0.cucumber.energy.BaseEnergyStorage;
+import com.blakebr0.cucumber.energy.CEnergyStorage;
 import com.blakebr0.cucumber.tileentity.BaseTileEntity;
-import com.blakebr0.cucumber.util.Localizable;
+import com.blakebr0.cucumber.util.ContainerDataBuilder;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.container.FluxAlternatorContainer;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class FluxAlternatorTileEntity extends BaseTileEntity implements MenuProvider {
-    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
-    private final BaseEnergyStorage energy;
+    private final CEnergyStorage energy;
+
+    private final ContainerData dataAccess;
 
     public FluxAlternatorTileEntity(BlockPos pos, BlockState state) {
         super(ModTileEntities.FLUX_ALTERNATOR.get(), pos, state);
-        this.energy = new BaseEnergyStorage(ModConfigs.FLUX_ALTERNATOR_POWER_CAPACITY.get(), this::setChangedAndDispatch);
+        this.energy = new CEnergyStorage(ModConfigs.FLUX_ALTERNATOR_POWER_CAPACITY.get(), _ -> this.setChangedAndDispatch());
+
+        this.dataAccess = ContainerDataBuilder.builder()
+                .sync(this.energy::getAmountAsInt, this.energy::set)
+                .sync(this.energy::getCapacityAsInt, this.energy::setMaxCapacity)
+                .build();
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        this.energy.deserializeNBT(tag.get("Energy"));
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        this.energy.deserialize(input.childOrEmpty("energy"));
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.putInt("Energy", this.energy.getEnergyStored());
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putChild("energy", this.energy);
     }
 
     @Override
     public Component getDisplayName() {
-        return Localizable.of("container.extendedcrafting.flux_alternator").build();
+        return Component.translatable("container.extendedcrafting.flux_alternator");
     }
 
     @Override
     public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player player) {
-        return FluxAlternatorContainer.create(windowId, playerInventory, this.getBlockPos());
+        return new FluxAlternatorContainer(windowId, playerInventory, this.dataAccess, this.getBlockPos());
     }
 
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
-            return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
-        }
-
-        return super.getCapability(cap, side);
-    }
-
-    public BaseEnergyStorage getEnergy() {
+    public CEnergyStorage getEnergy() {
         return this.energy;
     }
 }

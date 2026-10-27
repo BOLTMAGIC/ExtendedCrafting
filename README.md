@@ -1,24 +1,40 @@
-# Extended Crafting: Expanded Reforked
+# Extended Crafting: Expanded Plus
 
-Adds some new ways to craft items, as well as extra crafting items and utilities.
-Originally forked for use in Monifactory. "What if we tried more tables?
+NeoForge **26.1.2** source port of the Expanded Plus fork, based on
+[BlakeBr0/ExtendedCrafting's 26.1 branch](https://github.com/BlakeBr0/ExtendedCrafting/tree/26.1).
 
-And forked again because 11x11 is still not enough for my modpack.
+- Epic (11x11) and Legendary (13x13) crafting tables and automatic variants.
+- All six auto-table tiers have individual crafting times, defaulting to 8 ticks.
+- Automatic tables can import multiple items per tick, paying energy per committed item.
+- JEI categories, recipe transfer, click areas, and Jade tier information for both added tiers.
+- Recipes without a tier restriction appear in the smallest JEI table category that fits them.
+- Recipe Maker reads all 121/169 input slots. Datapack output uses the first hotbar slot;
+  shapeless table recipes retain the table tier.
+- A bounded container-click codec adjustment supports clicks changing more than 128 slots.
 
-## Download
-- [ExtendedCrafting: Expanded Plus (Curseforge)]()
-- [ExtendedCrafting: Monifactory Edition (Curseforge)](https://www.curseforge.com/minecraft/mc-mods/extended-crafting-monifactory-edition)
-- [BlakeBr0's Cucumber Library (required dependency)](https://www.curseforge.com/minecraft/mc-mods/cucumber)
+## Requirements
 
-- [Original mod at Blake's Mods](https://blakesmods.com/extended-crafting/download)
+Minecraft 26.1.2, NeoForge 26.1.2.71 (the pinned development version), and
+Cucumber 26.1.2-9.0.0 or a compatible newer version. Development uses JDK 25.
+JEI, Jade, and Patchouli versions follow the upstream 26.1 branch.
+CraftTweaker integration remains disabled in the upstream 26.1 source.
 
-## What has changed from the original
+## Port status
 
-- Added a new tier of table with a 13x13 grid
-- Auto Table Speed is now configurable per tier (default to 8gt/0.4s per craft)
-- Auto Table item input logic reworked to allow the table to keep up, can now import more than one item per tick.
-- JEI Compatibility: Recipes with no tier restriction are only shown in the smallest table that can fit them. Tier-restricted recipes still show the warning icon. [TODO: Make this a config option]
+Version: `26.1.2-8.1.0`. This checkout has **not been compiled or tested in Minecraft**.
+See [PORTING.md](PORTING.md) for source provenance, validation boundaries, and remaining checks.
+No release artifact has been produced or published.
 
-## License
+This mod retains the `extendedcrafting` namespace and replaces the original mod;
+installing both together is unsupported. A Forge 1.20.1 save is not a supported
+migration source for this NeoForge 26.1.2 port.
 
-[MIT License](./LICENSE)
+## Credits and license
+
+Original Extended Crafting by BlakeBr0. Expanded changes by WithersChat,
+Expanded Plus by BOLT_M4G1C, and this port by Knozyy.
+The original Plus art and registry IDs are retained.
+
+- [Original Extended Crafting](https://github.com/BlakeBr0/ExtendedCrafting)
+- [Expanded Plus source](https://github.com/BOLTMAGIC/ExtendedCrafting)
+- [MIT License](LICENSE)

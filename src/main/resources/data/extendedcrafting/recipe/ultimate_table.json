@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:tables"
+    }
+  ],
+  "pattern": [
+    "BAB",
+    "CIC",
+    "BSB"
+  ],
+  "key": {
+    "I": "#c:storage_blocks/emerald",
+    "C": [
+      "extendedcrafting:elite_table",
+      "extendedcrafting:elite_auto_table"
+    ],
+    "B": "extendedcrafting:ultimate_component",
+    "S": "extendedcrafting:black_iron_slate",
+    "A": "extendedcrafting:ultimate_catalyst"
+  },
+  "result": {
+    "id": "extendedcrafting:ultimate_table"
+  }
+}

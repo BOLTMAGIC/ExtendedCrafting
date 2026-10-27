@@ -1,22 +1,26 @@
 package com.blakebr0.extendedcrafting.container;
 
 import com.blakebr0.cucumber.container.BaseContainerMenu;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class CraftingCoreContainer extends BaseContainerMenu {
-	private CraftingCoreContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
-		this(type, id, playerInventory, buffer.readBlockPos());
+	private final ContainerData data;
+
+	public CraftingCoreContainer(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
+		this(id, playerInventory, new SimpleContainerData(6), buffer.readBlockPos());
 	}
 
-	private CraftingCoreContainer(MenuType<?> type, int id, Inventory playerInventory, BlockPos pos) {
-		super(type, id, pos);
+	public CraftingCoreContainer(int id, Inventory playerInventory, ContainerData data, BlockPos pos) {
+		super(ModMenuTypes.CRAFTING_CORE.get(), id, pos);
+		this.data = data;
 
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 9; j++) {
@@ -27,6 +31,8 @@ public class CraftingCoreContainer extends BaseContainerMenu {
 		for (int i = 0; i < 9; i++) {
 			this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 170));
 		}
+
+		this.addDataSlots(data);
 	}
 
 	@Override
@@ -66,11 +72,27 @@ public class CraftingCoreContainer extends BaseContainerMenu {
 		return itemstack;
 	}
 
-	public static CraftingCoreContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new CraftingCoreContainer(ModContainerTypes.CRAFTING_CORE.get(), windowId, playerInventory, buffer);
+	public int getEnergyStored() {
+		return this.data.get(0);
 	}
 
-	public static CraftingCoreContainer create(int windowId, Inventory playerInventory, BlockPos pos) {
-		return new CraftingCoreContainer(ModContainerTypes.CRAFTING_CORE.get(), windowId, playerInventory, pos);
+	public int getMaxEnergyCapacity() {
+		return this.data.get(1);
+	}
+
+	public int getProgress() {
+		return this.data.get(2);
+	}
+
+	public int getEnergyRequired() {
+		return this.data.get(3);
+	}
+
+	public int getEnergyRate() {
+		return this.data.get(4);
+	}
+
+	public int getPedestalCount() {
+		return this.data.get(5);
 	}
 }

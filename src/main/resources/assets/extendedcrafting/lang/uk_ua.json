@@ -1,5 +1,5 @@
 {
-  "itemGroup.extendedcrafting": "Extended Crafting: Expanded Plus",
+  "itemGroup.extendedcrafting": "Extended Crafting",
 
   "block.extendedcrafting.luminessence_block": "Люмінесцентний блок",
   "block.extendedcrafting.black_iron_block": "Блок чорного заліза",
@@ -89,10 +89,8 @@
   "tooltip.extendedcrafting.mode": "Режим: %s",
   "tooltip.extendedcrafting.type": "Тип: %s",
   "tooltip.extendedcrafting.num_items": "%s предметів",
-  "tooltip.extendedcrafting.ticks": "%s тіків",
   "tooltip.extendedcrafting.seconds": "%s секунд",
   "tooltip.extendedcrafting.requires_table": "Потрібен верстак рівня %s",
-  "tooltip.extendedcrafting.items_required": "Необхідні предмети:",
   "tooltip.extendedcrafting.singularity_id": "ID сингулярності: %s",
   "tooltip.extendedcrafting.added_by": "Додано: %s",
   "tooltip.extendedcrafting.auto_table_save_recipe": "Shift + ЛКМ, щоб зберегти цей рецепт.",
@@ -100,12 +98,8 @@
 
   "message.extendedcrafting.changed_mode": "Змінено режим на %s.",
   "message.extendedcrafting.copied_recipe": "Рецепт скопійовано в буфер обміну.",
-  "message.extendedcrafting.nbt_requires_crafttweaker": "Для копіювання NBT потрібен CraftTweaker.",
+  "message.extendedcrafting.data_components_requires_crafttweaker": "Для копіювання Data Components потрібен CraftTweaker.",
   "message.extendedcrafting.max_unique_items_exceeded": "Ви можете мати максимум (%s) унікальних предметів у формованому рецепті датапака.",
-  "message.extendedcrafting.no_items_in_grid": "У сітці немає елементів для копіювання.",
-  "message.extendedcrafting.no_output_item_warning": "У першому слоті швидкого доступу немає предмета. Ви можете покласти вихідний предмет у перший слот, щоб включити його в скопійований рецепт.",
-  "message.extendedcrafting.remove_output_items": "Неможливо переключити режим викиду, поки у слоті виводу є предмети. Будь ласка, спочатку приберіть предмети з виходу.",
-
 
   "jei.category.extendedcrafting.combination": "Комбіноване майстрування",
   "jei.category.extendedcrafting.basic_crafting": "Базове майстрування",
@@ -149,7 +143,7 @@
   "book.extendedcrafting.entry.combination.page.1": "Комбіноване майстрування — це мультиблочна установка для майстрування, в якій предмети комбінуються разом, щоб змайструвати щось $(italic)особливе.$() $(br2)Ця установка складається з ядра майстрування в центрі та п'єдесталів, розташованих навколо нього. П'єдестали можна розміщувати будь-де навколо ядра майстрування в радіусі 3 блоків і вони повинні бути на одній висоті.",
   "book.extendedcrafting.entry.combination.page.2": "Щоб ця структура функціонувала, ядро майстрування повинно бути забезпечене енергією. $(br2)Рецепти мають центральний предмет, який розміщується на ядрі майстрування, і п'єдестальні предмети, які розміщуються на п'єдесталах навколо нього. $(br)Клацніть ПКМ по боковій частині ядра майстрування, щоб переглянути інформацію про поточне майстрування, наприклад прогрес або витрати енергії, а також скільки енергії зберігається в ньому.",
   "book.extendedcrafting.entry.tables": "Верстаки",
-  "book.extendedcrafting.entry.tables.page.1": "Цей мод додає нові верстаки розміром $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$(), $(bold)9x9$(), $(bold)11x11$() та $(bold)13x13$(). Ці верстаки зберігають предмети, які в них лежать, коли вони закриті.",
+  "book.extendedcrafting.entry.tables.page.1": "Цей мод додає нові верстаки розміром $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$() та $(bold)9x9$(). Ці верстаки зберігають предмети, які в них лежать, коли вони закриті.",
   "book.extendedcrafting.entry.compression": "Компресійне майстрування",
   "book.extendedcrafting.entry.compression.page.1": "Квантова компресія — це процес надсильної компресії предметів. Для цього використовується квантовий компресор. $(br2)Квантовий компресор — це потужна машина, яка може утримувати та стискати надзвичайно великі обсяги матеріалів. Предмети, розміщені всередині квантового компресора, потрапляють у внутрішній буфер для компресії. Буфер представлений у вигляді синьої смуги.",
   "book.extendedcrafting.entry.compression.page.2": "Для кожного рецепту $(bold)зазвичай$() потрібен каталізатор. Каталізатор розміщується в крайньому лівому слоті і не витрачається. $(br2)Коли в буфері буде достатньо предметів, машина почне майструвати предмет. Квантовий компресор споживатиме енергію лише під час майстрування. $(br2)Якщо ви поклали в компресор предмети, які не хотіли б втрачати назавжди, ви можете натиснути кнопку Витягнути над вхідним слотом, щоб повернути їх.",
@@ -168,5 +162,7 @@
   "book.extendedcrafting.entry.ultimate_singularity.page.1": "Ультимативна сингулярність $(bold)зазвичай$() створюється в $(l:crafting/tables)ультимативному верстаку$(). $(br2)Вона $(bold)зазвичай$() створюється з усіх, якщо не більшості, доступних сингулярностей.",
 
   "book.extendedcrafting.entry.handheld_table": "Ручний верстак",
-  "book.extendedcrafting.entry.handheld_table.page.1": "Ручний верстак — це верстак."
+  "book.extendedcrafting.entry.handheld_table.page.1": "Ручний верстак — це верстак.",
+
+  "message.extendedcrafting.no_output_item_warning": "У першому слоті швидкого доступу немає предмета. Ви можете покласти вихідний предмет у перший слот, щоб включити його в скопійований рецепт."
 }

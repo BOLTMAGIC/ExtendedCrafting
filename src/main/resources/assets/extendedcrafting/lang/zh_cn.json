@@ -103,10 +103,8 @@
   "tooltip.extendedcrafting.type": "类型：%s",
   "tooltip.extendedcrafting.num_items": "%s物品",
   "tooltip.extendedcrafting.and_x_more": "还有 %s 个...",
-  "tooltip.extendedcrafting.ticks": "%s刻",
   "tooltip.extendedcrafting.seconds": "%s 秒",
   "tooltip.extendedcrafting.requires_table": "需要%s级工作台",
-  "tooltip.extendedcrafting.items_required": "所需物品：",
   "tooltip.extendedcrafting.per_alternator": "每个交流器 %s",
   "tooltip.extendedcrafting.singularity_id": "奇点ID：%s",
   "tooltip.extendedcrafting.added_by": "添加者：%s",
@@ -115,12 +113,8 @@
 
   "message.extendedcrafting.changed_mode": "模式改变为%s。",
   "message.extendedcrafting.copied_recipe": "复制配方到剪贴板。",
-  "message.extendedcrafting.nbt_requires_crafttweaker": "警告：需安装CraftTweaker方可复制NBT。",
+  "message.extendedcrafting.data_components_requires_crafttweaker": "警告：需安装CraftTweaker方可复制Data Components。",
   "message.extendedcrafting.max_unique_items_exceeded": "在成型的数据包配方中，你最多只能有%s个唯一项目。",
-  "message.extendedcrafting.no_items_in_grid": "网格中没有可复制的物品。",
-  "message.extendedcrafting.no_output_item_warning": "第一个快捷栏槽位中没有物品。你可以将输出物品放入第一个快捷栏槽位，以便将其包含在复制的配方中。",
-  "message.extendedcrafting.remove_output_items": "无法切换弹出模式：输出槽中有物品。请先移除输出物品。",
-
 
   "jei.category.extendedcrafting.combination": "组合合成",
   "jei.category.extendedcrafting.basic_crafting": "基础合成",
@@ -180,7 +174,7 @@
   "book.extendedcrafting.entry.combination.page.1": "组合合成是一个架设在世界上的多方块结构，使得物品组合在一起成为$(italic)特殊物品$()。$(br2)此结构在中央摆放一个合成核心且在其周围摆放基座。基座能放在合成核心半径三格范围内任意位置，且必须在同一高度。",
   "book.extendedcrafting.entry.combination.page.2": "为了使结构起作用，必须为合成核心提供能量。$(br2)配方中央位置的物品放在合成核心上，需放基座上的物品则放在其附近的基座上。$(br)右击合成核心的侧边会显示当前合成的信息，例如进度和能量消耗，以及其内部能量储量。",
   "book.extendedcrafting.entry.tables": "工作台合成",
-  "book.extendedcrafting.entry.tables.page.1": "本mod添加了$(bold)3x3$()，$(bold)5x5$()，$(bold)7x7$()，$(bold)9x9$()，$(bold)11x11$()，和$(bold)13x13$()大小的不同等级的工作台。关闭工作台时将会保存在其内部空间的物品。",
+  "book.extendedcrafting.entry.tables.page.1": "本mod添加了$(bold)3x3$()，$(bold)5x5$()，$(bold)7x7$()，和$(bold)9x9$()大小的不同等级的工作台。关闭工作台时将会保存在其内部空间的物品。",
   "book.extendedcrafting.entry.compression": "压缩合成",
   "book.extendedcrafting.entry.compression.page.1": "量子压缩是将物品压缩得有点多的过程。使用量子压缩机即可进行压缩。$(br2)量子压缩机是一个需要能量的机器，它能容纳及对极大数量的材料进行压缩。放在量子压缩机的物品将进入到其内部缓存槽以用于压缩。缓存槽会以蓝色的条状物显示。",
   "book.extendedcrafting.entry.compression.page.2": "每个配方$(bold)一般$()都需要一个催化剂。催化剂需被放置在最左边的槽位中，它不会被消耗。$(br2)一旦缓存槽有足够的材料，机器将会开始制作物品。量子压缩机只会在合成的过程中使用能量。$(br2)假如你将物品错误放入压缩机，你只需点击在输入槽上方的弹出按钮即可拿回物品。",
@@ -202,5 +196,7 @@
   "book.extendedcrafting.entry.ultimate_singularity.page.1": "终极奇点$(bold)通常$()在$(l:crafting/tables)终极工作台$()中合成。$(br2)它$(bold)通常$()由所有（如果不是大多数）可用的奇点合成而成。",
 
   "book.extendedcrafting.entry.handheld_table": "手持工作台",
-  "book.extendedcrafting.entry.handheld_table.page.1": "手持工作台是一个工作台。"
+  "book.extendedcrafting.entry.handheld_table.page.1": "手持工作台是一个工作台。",
+
+  "message.extendedcrafting.no_output_item_warning": "第一个快捷栏槽位中没有物品。你可以将输出物品放入第一个快捷栏槽位，以便将其包含在复制的配方中。"
 }

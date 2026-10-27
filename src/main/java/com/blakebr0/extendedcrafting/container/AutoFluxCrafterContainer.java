@@ -1,35 +1,37 @@
 package com.blakebr0.extendedcrafting.container;
 
 import com.blakebr0.cucumber.container.BaseContainerMenu;
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import com.blakebr0.cucumber.inventory.slot.OutputSlot;
-import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.cucumber.inventory.CItemStacksHandler;
+import com.blakebr0.cucumber.inventory.slot.COutputSlot;
+import com.blakebr0.extendedcrafting.container.slot.ManualOnlyInputSlot;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.tileentity.FluxCrafterTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class AutoFluxCrafterContainer extends BaseContainerMenu {
-	private AutoFluxCrafterContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
-		this(type, id, playerInventory, FluxCrafterTileEntity.createInventoryHandler(), buffer.readBlockPos());
+	private final ContainerData data;
+
+	public AutoFluxCrafterContainer(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
+		this(id, playerInventory, FluxCrafterTileEntity.createInventoryHandler(), new SimpleContainerData(5), buffer.readBlockPos());
 	}
 
-	private AutoFluxCrafterContainer(MenuType<?> type, int id, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		super(type, id, pos);
+	public AutoFluxCrafterContainer(int id, Inventory playerInventory, CItemStacksHandler inventory, ContainerData data, BlockPos pos) {
+		super(ModMenuTypes.AUTO_FLUX_CRAFTER.get(), id, pos);
+		this.data = data;
 
-		var matrix = new ExtendedCraftingInventory(this, inventory, 3);
-
-		this.addSlot(new OutputSlot(inventory, 9, 127, 48));
+		this.addSlot(new COutputSlot(inventory, 9, 127, 48));
 
 		int i, j;
 		for (i = 0; i < 3; i++) {
 			for (j = 0; j < 3; j++) {
-				this.addSlot(new Slot(matrix, j + i * 3, 33 + j * 18, 30 + i * 18));
+				this.addSlot(new ManualOnlyInputSlot(inventory, j + i * 3, 33 + j * 18, 30 + i * 18));
 			}
 		}
 
@@ -42,6 +44,8 @@ public class AutoFluxCrafterContainer extends BaseContainerMenu {
 		for (j = 0; j < 9; j++) {
 			this.addSlot(new Slot(playerInventory, j, 8 + j * 18, 170));
 		}
+
+		this.addDataSlots(data);
 	}
 
 	@Override
@@ -83,11 +87,23 @@ public class AutoFluxCrafterContainer extends BaseContainerMenu {
 		return itemstack;
 	}
 
-	public static AutoFluxCrafterContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new AutoFluxCrafterContainer(ModContainerTypes.AUTO_FLUX_CRAFTER.get(), windowId, playerInventory, buffer);
+	public int getEnergyStored() {
+		return this.data.get(0);
 	}
 
-	public static AutoFluxCrafterContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new AutoFluxCrafterContainer(ModContainerTypes.AUTO_FLUX_CRAFTER.get(), windowId, playerInventory, inventory, pos);
+	public int getMaxEnergyCapacity() {
+		return this.data.get(1);
+	}
+
+	public int getProgress() {
+		return this.data.get(2);
+	}
+
+	public int getProgressRequired() {
+		return this.data.get(3);
+	}
+
+	public int getSelectedRecipeIndex() {
+		return this.data.get(4);
 	}
 }

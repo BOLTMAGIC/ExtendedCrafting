@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:tables"
+    },
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:auto_tables"
+    }
+  ],
+  "pattern": [
+    "BAB",
+    "CIC",
+    "BSB"
+  ],
+  "key": {
+    "I": "#c:storage_blocks/gold",
+    "C": [
+      "extendedcrafting:basic_table",
+      "extendedcrafting:basic_auto_table"
+    ],
+    "B": "extendedcrafting:advanced_component",
+    "S": "extendedcrafting:black_iron_slate",
+    "A": "extendedcrafting:advanced_catalyst"
+  },
+  "result": {
+    "id": "extendedcrafting:advanced_table"
+  }
+}

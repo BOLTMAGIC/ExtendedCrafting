@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IGI",
+    "GSG",
+    "IGI"
+  ],
+  "key": {
+    "I": "extendedcrafting:black_iron_ingot",
+    "G": "#c:glass_blocks/colorless",
+    "S": "extendedcrafting:black_iron_slate"
+  },
+  "result": {
+    "id": "extendedcrafting:frame"
+  }
+}

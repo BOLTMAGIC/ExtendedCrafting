@@ -1,0 +1,36 @@
+license="MIT"
+
+[[mixins]]
+    config="extendedcrafting.mixins.json"
+
+[[mods]]
+    issueTrackerURL="https://github.com/BOLTMAGIC/ExtendedCrafting/issues"
+    modId="extendedcrafting"
+    version="${mod_version}"
+    displayName="Extended Crafting: Expanded Plus"
+    displayURL="https://github.com/BOLTMAGIC/ExtendedCrafting"
+    # logoFile="examplemod.png"
+    authors="Knozyy, BOLT_M4G1C, WithersChat, BlakeBr0"
+    credits="SpitefulFox; original Extended Crafting by BlakeBr0; Expanded forks by WithersChat and BOLT_M4G1C"
+    description='''
+    Extended Crafting with 11x11 and 13x13 crafting tables, automatic variants, and configurable crafting times per tier.
+    '''
+
+    [[dependencies.extendedcrafting]]
+        modId="neoforge"
+        mandatory=true
+        versionRange="[26.1.2.41-beta,)"
+        ordering="NONE"
+        side="BOTH"
+    [[dependencies.extendedcrafting]]
+        modId="minecraft"
+        mandatory=true
+        versionRange="[26.1.2,26.2)"
+        ordering="NONE"
+        side="BOTH"
+    [[dependencies.extendedcrafting]]
+        modId="cucumber"
+        mandatory=true
+        versionRange="[${cucumber_version},)"
+        ordering="NONE"
+        side="BOTH"

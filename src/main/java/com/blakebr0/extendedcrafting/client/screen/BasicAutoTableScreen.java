@@ -1,9 +1,8 @@
 package com.blakebr0.extendedcrafting.client.screen;
 
-import com.blakebr0.cucumber.client.render.GhostItemRenderer;
 import com.blakebr0.cucumber.client.screen.BaseContainerScreen;
 import com.blakebr0.cucumber.client.screen.widget.EnergyBarWidget;
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.inventory.CItemStacksHandler;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.client.screen.button.RecipeSelectButton;
 import com.blakebr0.extendedcrafting.client.screen.button.ToggleTableRunningButton;
@@ -12,18 +11,19 @@ import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
 import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BasicAutoTableScreen extends BaseContainerScreen<BasicAutoTableContainer> {
-	public static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/basic_auto_table.png");
+	public static final Identifier BACKGROUND = ExtendedCrafting.resource("textures/gui/basic_auto_table.png");
 	private AutoTableTileEntity tile;
 
 	public BasicAutoTableScreen(BasicAutoTableContainer container, Inventory inventory, Component title) {
@@ -34,76 +34,70 @@ public class BasicAutoTableScreen extends BaseContainerScreen<BasicAutoTableCont
 	public void init() {
 		super.init();
 
-		int x = this.getGuiLeft();
-		int y = this.getGuiTop();
+		int x = this.getLeftPos();
+		int y = this.getTopPos();
 		var pos = this.getMenu().getBlockPos();
 
-		this.addRenderableWidget(new ToggleTableRunningButton(x + 130, y + 59, pos, this::isRunning));
+		this.addRenderableWidget(new ToggleTableRunningButton(x + 130, y + 59, pos, this.menu::isRunning));
 
 		this.tile = this.getTileEntity();
 
-		if (this.tile != null) {
-			this.addRenderableWidget(new RecipeSelectButton(x + 132, y + 7, pos, 0, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
-			this.addRenderableWidget(new RecipeSelectButton(x + 145, y + 7, pos, 1, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
-			this.addRenderableWidget(new RecipeSelectButton(x + 158, y + 7, pos, 2, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
+		this.addRenderableWidget(new RecipeSelectButton(x + 132, y + 7, pos, 0, this.menu::getSelectedRecipeIndex, this::onSelectButtonTooltip));
+		this.addRenderableWidget(new RecipeSelectButton(x + 145, y + 7, pos, 1, this.menu::getSelectedRecipeIndex, this::onSelectButtonTooltip));
+		this.addRenderableWidget(new RecipeSelectButton(x + 158, y + 7, pos, 2, this.menu::getSelectedRecipeIndex, this::onSelectButtonTooltip));
 
-			this.addRenderableWidget(new EnergyBarWidget(x + 7, y + 17, this.tile.getEnergy()));
-		}
+		this.addRenderableWidget(new EnergyBarWidget(x + 7, y + 17, this.menu::getEnergyStored, this.menu::getMaxEnergyCapacity));
 	}
 
 	@Override
-	protected void renderTooltip(GuiGraphics gfx, int mouseX, int mouseY) {
-		int x = this.getGuiLeft();
-		int y = this.getGuiTop();
+	protected void extractLabels(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
+		gfx.text(this.font, this.title, 32, 6, -12566464, false);
+		gfx.text(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, -12566464, false);
+	}
 
-		super.renderTooltip(gfx, mouseX, mouseY);
+	@Override
+	protected void extractTooltip(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
+		int x = this.getLeftPos();
+		int y = this.getTopPos();
+
+		super.extractTooltip(gfx, mouseX, mouseY);
 
 		if (mouseX > x + 129 && mouseX < x + 142 && mouseY > y + 58 && mouseY < y + 73) {
-			gfx.renderTooltip(this.font, ModTooltips.TOGGLE_AUTO_CRAFTING.color(ChatFormatting.WHITE).build(), mouseX, mouseY);
+			gfx.setTooltipForNextFrame(this.font, ModTooltips.TOGGLE_AUTO_CRAFTING.color(ChatFormatting.WHITE).toComponent(), mouseX, mouseY);
 		}
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
-		var title = this.getTitle().getString();
+	public void extractBackground(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float a) {
+		super.extractBackground(gfx, mouseX, mouseY, a);
 
-		gfx.drawString(this.font, title, 32, 6, 4210752, false);
-		gfx.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, 4210752, false);
-	}
+		int x = this.getLeftPos();
+		int y = this.getTopPos();
 
-	@Override
-	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		super.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
-
-		int x = this.getGuiLeft();
-		int y = this.getGuiTop();
-
-		if (this.isRunning()) {
+		if (this.menu.isRunning()) {
 			int i2 = this.getProgressBarScaled();
-			gfx.blit(BACKGROUND, x + 129, y + 58, 194, 0, 13, i2);
+			gfx.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x + 129, y + 58, 194, 0, 13, i2, 256, 256);
 		}
 
 		var recipe = this.getSelectedRecipe();
 
 		if (recipe != null) {
-			var itemRenderer = Minecraft.getInstance().getItemRenderer();
-
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					int index = (i * 3) + j;
-					var item = recipe.getStackInSlot(index);
+					var stack = recipe.getResource(index).toStack();
 
-					GhostItemRenderer.renderItemIntoGui(item, x + 33 + (j * 18), y + 30 + (i * 18), itemRenderer);
+					this.extractGhostItem(gfx, x + 33 + (j * 18), y + 30 + (i * 18), stack);
 				}
 			}
 
-			var output = recipe.getStackInSlot(recipe.getSlots() - 1);
+			var output = recipe.getResource(recipe.size() - 1).toStack();
 
-			GhostItemRenderer.renderItemIntoGui(output, x + 129, y + 34, itemRenderer);
+			this.extractGhostItem(gfx, x + 129, y + 34, output);
 		}
 	}
 
-	private void onSelectButtonTooltip(Button button, GuiGraphics gfx, int mouseX, int mouseY) {
+	private void onSelectButtonTooltip(Button button, GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
 		var index = ((RecipeSelectButton) button).getIndex();
 		var isSelected = ((RecipeSelectButton) button).isSelected();
 		var recipe = this.getRecipeInfo(index);
@@ -113,29 +107,29 @@ public class BasicAutoTableScreen extends BaseContainerScreen<BasicAutoTableCont
 			var hasRecipe = !recipe.getStacks().stream().allMatch(ItemStack::isEmpty);
 
 			if (hasRecipe) {
-				var output = recipe.getStackInSlot(recipe.getSlots() - 1);
+				var output = recipe.getResource(recipe.size() - 1);
 
 				tooltip = Lists.newArrayList(
-						Component.literal(output.getCount() + "x " + output.getHoverName().getString()),
+						Component.literal(recipe.getAmountAsInt(recipe.size() - 1) + "x " + output.getHoverName().getString()),
 						Component.literal(""),
-						ModTooltips.AUTO_TABLE_DELETE_RECIPE.color(ChatFormatting.WHITE).build()
+						ModTooltips.AUTO_TABLE_DELETE_RECIPE.color(ChatFormatting.WHITE).toComponent()
 				);
 
 				if (isSelected) {
-					tooltip.add(1, ModTooltips.SELECTED.color(ChatFormatting.GREEN).build());
+					tooltip.add(1, ModTooltips.SELECTED.color(ChatFormatting.GREEN).toComponent());
 				}
 			} else {
 				tooltip = Lists.newArrayList(
-						ModTooltips.AUTO_TABLE_SAVE_RECIPE.color(ChatFormatting.WHITE).build()
+						ModTooltips.AUTO_TABLE_SAVE_RECIPE.color(ChatFormatting.WHITE).toComponent()
 				);
 
 				if (isSelected) {
-					tooltip.add(0, ModTooltips.SELECTED.color(ChatFormatting.GREEN).build());
+					tooltip.add(0, ModTooltips.SELECTED.color(ChatFormatting.GREEN).toComponent());
 					tooltip.add(1, Component.literal(""));
 				}
 			}
 
-			gfx.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);
+			gfx.setTooltipForNextFrame(this.font, tooltip, Optional.empty(), mouseX, mouseY);
 		}
 	}
 
@@ -152,44 +146,23 @@ public class BasicAutoTableScreen extends BaseContainerScreen<BasicAutoTableCont
 		return null;
 	}
 
-	private boolean isRunning() {
-		if (this.tile == null)
-			return false;
-
-		return this.tile.isRunning();
-	}
-
-	private BaseItemStackHandler getRecipeInfo(int selected) {
+	private CItemStacksHandler getRecipeInfo(int selected) {
 		if (this.tile == null)
 			return null;
 
 		return this.tile.getRecipeStorage().getRecipe(selected);
 	}
 
-	private BaseItemStackHandler getSelectedRecipe() {
+	private CItemStacksHandler getSelectedRecipe() {
 		if (this.tile == null)
 			return null;
 
 		return this.tile.getRecipeStorage().getSelectedRecipe();
 	}
 
-	private int getProgress() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getProgress();
-	}
-
-	private int getProgressRequired() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getProgressRequired();
-	}
-
 	private int getProgressBarScaled() {
-		int i = this.getProgress();
-		int j = this.getProgressRequired();
+		int i = this.menu.getProgress();
+		int j = this.menu.getProgressRequired();
 		return j != 0 && i != 0 ? i * 16 / j : 0;
 	}
 }

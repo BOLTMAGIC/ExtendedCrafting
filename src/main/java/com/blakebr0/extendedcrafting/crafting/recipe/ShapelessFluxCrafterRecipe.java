@@ -1,110 +1,106 @@
 package com.blakebr0.extendedcrafting.crafting.recipe;
 
-import com.blakebr0.cucumber.crafting.ISpecialRecipe;
 import com.blakebr0.extendedcrafting.api.crafting.IFluxCrafterRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
-import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.RecipeMatcher;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.common.util.RecipeMatcher;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class ShapelessFluxCrafterRecipe implements ISpecialRecipe, IFluxCrafterRecipe {
-	private final ResourceLocation recipeId;
-	private final NonNullList<Ingredient> inputs;
-	private final ItemStack output;
+public class ShapelessFluxCrafterRecipe implements IFluxCrafterRecipe {
+	public static final MapCodec<ShapelessFluxCrafterRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
+			builder.group(
+					Ingredient.CODEC
+							.listOf()
+							.fieldOf("ingredients")
+							.flatXmap(
+									field -> {
+										var max = 9;
+										var ingredients = field.toArray(Ingredient[]::new);
+										if (ingredients.length == 0) {
+											return DataResult.error(() -> "No ingredients for Combination recipe");
+										} else {
+											return ingredients.length > max
+													? DataResult.error(() -> "Too many ingredients for Combination recipe. The maximum is: %s".formatted(max))
+													: DataResult.success(Arrays.asList(ingredients));
+										}
+									},
+									DataResult::success
+							)
+							.forGetter(recipe -> recipe.ingredients),
+					ItemStackTemplate.CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+					Codec.INT.fieldOf("power_required").forGetter(recipe -> recipe.powerRequired),
+					Codec.INT.optionalFieldOf("power_rate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get()).forGetter(recipe -> recipe.powerRequired)
+			).apply(builder, ShapelessFluxCrafterRecipe::new)
+	);
+	public static final StreamCodec<RegistryFriendlyByteBuf, ShapelessFluxCrafterRecipe> STREAM_CODEC = StreamCodec.of(
+			ShapelessFluxCrafterRecipe::toNetwork, ShapelessFluxCrafterRecipe::fromNetwork
+	);
+	public static final RecipeSerializer<ShapelessFluxCrafterRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
+
+	private final List<Ingredient> ingredients;
+	private final ItemStackTemplate result;
 	private final int powerRequired;
 	private final int powerRate;
 
-	public ShapelessFluxCrafterRecipe(ResourceLocation recipeId, NonNullList<Ingredient> inputs, ItemStack output, int powerRequired) {
-		this(recipeId, inputs, output, powerRequired, ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
-	}
-
-	public ShapelessFluxCrafterRecipe(ResourceLocation recipeId, NonNullList<Ingredient> inputs, ItemStack output, int powerRequired, int powerRate) {
-		this.recipeId = recipeId;
-		this.inputs = inputs;
-		this.output = output;
+	public ShapelessFluxCrafterRecipe(List<Ingredient> ingredients, ItemStackTemplate result, int powerRequired, int powerRate) {
+		this.ingredients = ingredients;
+		this.result = result;
 		this.powerRequired = powerRequired;
 		this.powerRate = powerRate;
 	}
 
 	@Override
-	public ItemStack getResultItem(RegistryAccess access) {
-		return this.output;
+	public boolean matches(CraftingInput inventory, Level level) {
+		if (this.ingredients.size() != inventory.ingredientCount())
+			return false;
+
+		var inputs = NonNullList.<ItemStack>create();
+
+		for (var i = 0; i < inventory.size(); i++) {
+			var item = inventory.getItem(i);
+			if (!item.isEmpty()) {
+				inputs.add(item);
+			}
+		}
+
+		return RecipeMatcher.findMatches(inputs, this.ingredients) != null;
 	}
 
 	@Override
-	public NonNullList<Ingredient> getIngredients() {
-		return this.inputs;
+	public ItemStack assemble(CraftingInput inventory) {
+		return this.result.create();
 	}
 
 	@Override
-	public ResourceLocation getId() {
-		return this.recipeId;
+	public RecipeSerializer<ShapelessFluxCrafterRecipe> getSerializer() {
+		return SERIALIZER;
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
-		return ModRecipeSerializers.SHAPELESS_FLUX_CRAFTER.get();
-	}
-
-	@Override
-	public RecipeType<?> getType() {
+	public RecipeType<IFluxCrafterRecipe> getType() {
 		return ModRecipeTypes.FLUX_CRAFTER.get();
 	}
 
 	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height >= this.inputs.size();
-	}
-
-	@Override
-	public ItemStack assemble(IItemHandler inventory, RegistryAccess access) {
-		return this.output.copy();
-	}
-
-	@Override
-	public ItemStack assemble(Container inventory, RegistryAccess access) {
-		return this.output.copy();
-	}
-
-	@Override
-	public boolean matches(IItemHandler inventory) {
-		List<ItemStack> inputs = new ArrayList<>();
-		int matched = 0;
-
-		for (int i = 0; i < inventory.getSlots(); i++) {
-			var stack = inventory.getStackInSlot(i);
-
-			if (!stack.isEmpty()) {
-				inputs.add(stack);
-
-				matched++;
-			}
-		}
-
-		return matched == this.inputs.size() && RecipeMatcher.findMatches(inputs,  this.inputs) != null;
-	}
-
-	@Override
-	public boolean matches(Container inv, Level level) {
-		return this.matches(new InvWrapper(inv));
+	public List<Ingredient> getIngredients() {
+		return this.ingredients;
 	}
 
 	@Override
@@ -117,50 +113,19 @@ public class ShapelessFluxCrafterRecipe implements ISpecialRecipe, IFluxCrafterR
 		return this.powerRate;
 	}
 
-	public static class Serializer implements RecipeSerializer<ShapelessFluxCrafterRecipe> {
-		@Override
-		public ShapelessFluxCrafterRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-			NonNullList<Ingredient> inputs = NonNullList.create();
-			var ingredients = GsonHelper.getAsJsonArray(json, "ingredients");
+	private static ShapelessFluxCrafterRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+		var ingredients = Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buffer);
+		var result = ItemStackTemplate.STREAM_CODEC.decode(buffer);
+		int powerRequired = buffer.readVarInt();
+		int powerRate = buffer.readVarInt();
 
-			for (int i = 0; i < ingredients.size(); i++) {
-				inputs.add(Ingredient.fromJson(ingredients.get(i)));
-			}
+		return new ShapelessFluxCrafterRecipe(ingredients, result, powerRequired, powerRate);
+	}
 
-			var output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
-			int powerRequired = GsonHelper.getAsInt(json, "powerRequired");
-			int powerRate = GsonHelper.getAsInt(json, "powerRate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
-
-			return new ShapelessFluxCrafterRecipe(recipeId, inputs, output, powerRequired, powerRate);
-		}
-
-		@Override
-		public ShapelessFluxCrafterRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-			int size = buffer.readVarInt();
-			var inputs = NonNullList.withSize(size, Ingredient.EMPTY);
-
-			for (int i = 0; i < size; ++i) {
-				inputs.set(i, Ingredient.fromNetwork(buffer));
-			}
-
-			var output = buffer.readItem();
-			int powerRequired = buffer.readVarInt();
-			int powerRate = buffer.readVarInt();
-
-			return new ShapelessFluxCrafterRecipe(recipeId, inputs, output, powerRequired, powerRate);
-		}
-
-		@Override
-		public void toNetwork(FriendlyByteBuf buffer, ShapelessFluxCrafterRecipe recipe) {
-			buffer.writeVarInt(recipe.inputs.size());
-
-			for (var ingredient : recipe.inputs) {
-				ingredient.toNetwork(buffer);
-			}
-
-			buffer.writeItem(recipe.output);
-			buffer.writeVarInt(recipe.powerRequired);
-			buffer.writeVarInt(recipe.powerRate);
-		}
+	private static void toNetwork(RegistryFriendlyByteBuf buffer, ShapelessFluxCrafterRecipe recipe) {
+		Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buffer, recipe.ingredients);
+		ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result);
+		buffer.writeVarInt(recipe.powerRequired);
+		buffer.writeVarInt(recipe.powerRate);
 	}
 }

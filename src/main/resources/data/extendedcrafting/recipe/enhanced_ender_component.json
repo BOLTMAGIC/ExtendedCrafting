@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "extendedcrafting:black_iron_slate",
+    "extendedcrafting:luminessence",
+    "extendedcrafting:enhanced_ender_ingot",
+    "extendedcrafting:enhanced_ender_ingot"
+  ],
+  "result": {
+    "id": "extendedcrafting:enhanced_ender_component"
+  }
+}

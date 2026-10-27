@@ -1,110 +1,72 @@
 package com.blakebr0.extendedcrafting.crafting.recipe;
 
-import com.blakebr0.cucumber.crafting.ISpecialRecipe;
+import com.blakebr0.cucumber.crafting.ShapedRecipePatternCodecs;
 import com.blakebr0.extendedcrafting.api.crafting.IEnderCrafterRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
-import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
 
-public class ShapedEnderCrafterRecipe implements ISpecialRecipe, IEnderCrafterRecipe {
-	private final ResourceLocation recipeId;
-	private final NonNullList<Ingredient> inputs;
-	private final ItemStack output;
-	private final int width;
-	private final int height;
+import java.util.List;
+import java.util.Optional;
+
+public class ShapedEnderCrafterRecipe implements IEnderCrafterRecipe {
+	public static final MapCodec<ShapedEnderCrafterRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(builder ->
+			builder.group(
+					ShapedRecipePatternCodecs.MAP_CODEC.forGetter(recipe -> recipe.pattern),
+					ItemStackTemplate.CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+					Codec.INT.optionalFieldOf("crafting_time", ModConfigs.ENDER_CRAFTER_TIME_REQUIRED.get()).forGetter(recipe -> recipe.craftingTime)
+			).apply(builder, ShapedEnderCrafterRecipe::new)
+	);
+	public static final StreamCodec<RegistryFriendlyByteBuf, ShapedEnderCrafterRecipe> STREAM_CODEC = StreamCodec.of(
+			ShapedEnderCrafterRecipe::toNetwork, ShapedEnderCrafterRecipe::fromNetwork
+	);
+	public static final RecipeSerializer<ShapedEnderCrafterRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
+
+	private final ShapedRecipePattern pattern;
+	private final ItemStackTemplate result;
 	private final int craftingTime;
 
-	public ShapedEnderCrafterRecipe(ResourceLocation recipeId, int width, int height, NonNullList<Ingredient> inputs, ItemStack output) {
-		this(recipeId, width, height, inputs, output, ModConfigs.ENDER_CRAFTER_TIME_REQUIRED.get());
-	}
-
-	public ShapedEnderCrafterRecipe(ResourceLocation recipeId, int width, int height, NonNullList<Ingredient> inputs, ItemStack output, int craftingTime) {
-		this.recipeId = recipeId;
-		this.inputs = inputs;
-		this.output = output;
-		this.width = width;
-		this.height = height;
+	public ShapedEnderCrafterRecipe(ShapedRecipePattern pattern, ItemStackTemplate result, int craftingTime) {
+		this.pattern = pattern;
+		this.result = result;
 		this.craftingTime = craftingTime;
 	}
 
 	@Override
-	public ItemStack getResultItem(RegistryAccess access) {
-		return this.output;
+	public boolean matches(CraftingInput inventory, Level level) {
+		return this.pattern.matches(inventory);
 	}
 
 	@Override
-	public ItemStack assemble(IItemHandler inventory, RegistryAccess access) {
-		return this.output.copy();
+	public ItemStack assemble(CraftingInput inventory) {
+		return this.result.create();
 	}
 
 	@Override
-	public ItemStack assemble(Container inventory, RegistryAccess access) {
-		return this.output.copy();
+	public RecipeSerializer<ShapedEnderCrafterRecipe> getSerializer() {
+		return SERIALIZER;
 	}
 
 	@Override
-	public boolean matches(IItemHandler inventory) {
-		int size = (int) Math.sqrt(inventory.getSlots());
-		for (int i = 0; i <= size - this.width; i++) {
-			for (int j = 0; j <= size - this.height; j++) {
-				if (this.checkMatch(inventory, i, j, true)) {
-					return true;
-				}
-
-				if (this.checkMatch(inventory, i, j, false)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	@Override
-	public boolean matches(Container inv, Level level) {
-		return this.matches(new InvWrapper(inv));
-	}
-
-	@Override
-	public NonNullList<Ingredient> getIngredients() {
-		return this.inputs;
-	}
-
-	@Override
-	public ResourceLocation getId() {
-		return this.recipeId;
-	}
-
-	@Override
-	public RecipeSerializer<?> getSerializer() {
-		return ModRecipeSerializers.SHAPED_ENDER_CRAFTER.get();
-	}
-
-	@Override
-	public RecipeType<?> getType() {
+	public RecipeType<IEnderCrafterRecipe> getType() {
 		return ModRecipeTypes.ENDER_CRAFTER.get();
 	}
 
 	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width >= this.width && height >= this.height;
+	public List<Optional<Ingredient>> getPositionedIngredients() {
+		return this.pattern.ingredients();
 	}
 
 	@Override
@@ -113,94 +75,24 @@ public class ShapedEnderCrafterRecipe implements ISpecialRecipe, IEnderCrafterRe
 	}
 
 	public int getWidth() {
-		return this.width;
+		return this.pattern.width();
 	}
 
 	public int getHeight() {
-		return this.height;
+		return this.pattern.height();
 	}
 
-	private boolean checkMatch(IItemHandler inventory, int x, int y, boolean mirror) {
-		int size = (int) Math.sqrt(inventory.getSlots());
-		for (int i = 0; i < size; i++) {
-			for (int j = 0; j < size; j++) {
-				int k = i - x;
-				int l = j - y;
-				var ingredient = Ingredient.EMPTY;
+	private static ShapedEnderCrafterRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+		var pattern = ShapedRecipePattern.STREAM_CODEC.decode(buffer);
+		var result = ItemStackTemplate.STREAM_CODEC.decode(buffer);
+		int craftingTime = buffer.readVarInt();
 
-				if (k >= 0 && l >= 0 && k < this.width && l < this.height) {
-					if (mirror) {
-						ingredient = this.inputs.get(this.width - k - 1 + l * this.width);
-					} else {
-						ingredient = this.inputs.get(k + l * this.width);
-					}
-				}
-
-				if (!ingredient.test(inventory.getStackInSlot(i + j * size))) {
-					return false;
-				}
-			}
-		}
-
-		return true;
+		return new ShapedEnderCrafterRecipe(pattern, result, craftingTime);
 	}
 
-	private static String[] patternFromJson(JsonArray jsonArr) {
-		String[] astring = new String[jsonArr.size()];
-		for (int i = 0; i < astring.length; ++i) {
-			String s = GsonHelper.convertToString(jsonArr.get(i), "pattern[" + i + "]");
-
-			if (i > 0 && astring[0].length() != s.length()) {
-				throw new JsonSyntaxException("Invalid pattern: each row must be the same width");
-			}
-
-			astring[i] = s;
-		}
-
-		return astring;
-	}
-
-	public static class Serializer implements RecipeSerializer<ShapedEnderCrafterRecipe> {
-		@Override
-		public ShapedEnderCrafterRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-			var map = ShapedRecipe.keyFromJson(GsonHelper.getAsJsonObject(json, "key"));
-			var pattern = ShapedRecipe.shrink(ShapedEnderCrafterRecipe.patternFromJson(GsonHelper.getAsJsonArray(json, "pattern")));
-			int width = pattern[0].length();
-			int height = pattern.length;
-			var inputs = ShapedRecipe.dissolvePattern(pattern, map, width, height);
-			var output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
-			int craftingTime = GsonHelper.getAsInt(json, "craftingTime", ModConfigs.ENDER_CRAFTER_TIME_REQUIRED.get());
-
-			return new ShapedEnderCrafterRecipe(recipeId, width, height, inputs, output, craftingTime);
-		}
-
-		@Override
-		public ShapedEnderCrafterRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-			int width = buffer.readVarInt();
-			int height = buffer.readVarInt();
-			var inputs = NonNullList.withSize(width * height, Ingredient.EMPTY);
-
-			for (int i = 0; i < inputs.size(); i++) {
-				inputs.set(i, Ingredient.fromNetwork(buffer));
-			}
-
-			var output = buffer.readItem();
-			int craftingTime = buffer.readVarInt();
-
-			return new ShapedEnderCrafterRecipe(recipeId, width, height, inputs, output, craftingTime);
-		}
-
-		@Override
-		public void toNetwork(FriendlyByteBuf buffer, ShapedEnderCrafterRecipe recipe) {
-			buffer.writeVarInt(recipe.width);
-			buffer.writeVarInt(recipe.height);
-
-			for (var ingredient : recipe.inputs) {
-				ingredient.toNetwork(buffer);
-			}
-
-			buffer.writeItem(recipe.output);
-			buffer.writeVarInt(recipe.craftingTime);
-		}
+	private static void toNetwork(RegistryFriendlyByteBuf buffer, ShapedEnderCrafterRecipe recipe) {
+		ShapedRecipePattern.STREAM_CODEC.encode(buffer, recipe.pattern);
+		ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result);
+		buffer.writeVarInt(recipe.craftingTime);
 	}
 }

@@ -1,44 +1,45 @@
 package com.blakebr0.extendedcrafting.container;
 
 import com.blakebr0.cucumber.container.BaseContainerMenu;
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.inventory.CItemStacksHandler;
 import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.container.slot.TableOutputSlot;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.tileentity.UltimateTableTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 public class UltimateTableContainer extends BaseContainerMenu {
 	private final Level level;
 	private final Container result;
+	private final ExtendedCraftingInventory matrix;
 
-	private UltimateTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
-		this(type, id, playerInventory, UltimateTableTileEntity.createInventoryHandler(), buffer.readBlockPos());
+	public UltimateTableContainer(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
+		this(id, playerInventory, UltimateTableTileEntity.createInventoryHandler(), buffer.readBlockPos());
 	}
 
-	private UltimateTableContainer(MenuType<?> type, int id, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		super(type, id, pos);
+	public UltimateTableContainer(int id, Inventory playerInventory, CItemStacksHandler inventory, BlockPos pos) {
+		super(ModMenuTypes.ULTIMATE_TABLE.get(), id, pos);
 		this.level = playerInventory.player.level();
 		this.result = new ResultContainer();
+		this.matrix = new ExtendedCraftingInventory(this, inventory, 9);
 
-		var matrix = new ExtendedCraftingInventory(this, inventory, 9);
-
-		this.addSlot(new TableOutputSlot(this, matrix, this.result, 0, 206, 89));
+		this.addSlot(new TableOutputSlot(this, this.matrix, this.result, 0, 206, 89));
 		
 		int i, j;
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
-				this.addSlot(new Slot(matrix, j + i * 9, 8 + j * 18, 18 + i * 18));
+				this.addSlot(new ResourceHandlerSlot(inventory, this.matrix::set, j + i * 9, 8 + j * 18, 18 + i * 18));
 			}
 		}
 
@@ -57,13 +58,15 @@ public class UltimateTableContainer extends BaseContainerMenu {
 
 	@Override
 	public void slotsChanged(Container matrix) {
-        if (this.level.isClientSide) {
+        if (this.level.isClientSide()) {
             return;
         }
-		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, this.level);
+
+		var inventory = this.matrix.asCraftInput();
+		var recipe = ((ServerLevel) this.level).recipeAccess().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level);
 
 		if (recipe.isPresent()) {
-			var result = recipe.get().assemble(matrix, this.level.registryAccess());
+			var result = recipe.get().value().assemble(inventory);
 			this.result.setItem(0, result);
 		} else {
 			this.result.setItem(0, ItemStack.EMPTY);
@@ -109,13 +112,5 @@ public class UltimateTableContainer extends BaseContainerMenu {
 		}
 
 		return itemstack;
-	}
-
-	public static UltimateTableContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new UltimateTableContainer(ModContainerTypes.ULTIMATE_TABLE.get(), windowId, playerInventory, buffer);
-	}
-
-	public static UltimateTableContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new UltimateTableContainer(ModContainerTypes.ULTIMATE_TABLE.get(), windowId, playerInventory, inventory, pos);
 	}
 }

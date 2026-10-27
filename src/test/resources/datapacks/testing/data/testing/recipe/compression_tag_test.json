@@ -1,0 +1,12 @@
+{
+  "type": "extendedcrafting:compressor",
+  "power_cost": 500000,
+  "ingredient": {
+    "ingredient": "#minecraft:logs",
+    "count": 10000
+  },
+  "catalyst": "extendedcrafting:ender_catalyst",
+  "result": {
+    "id": "minecraft:redstone"
+  }
+}

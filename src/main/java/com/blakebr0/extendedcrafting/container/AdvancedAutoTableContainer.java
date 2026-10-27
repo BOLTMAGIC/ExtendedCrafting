@@ -1,49 +1,54 @@
 package com.blakebr0.extendedcrafting.container;
 
 import com.blakebr0.cucumber.container.BaseContainerMenu;
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.inventory.CItemStacksHandler;
 import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.container.slot.AutoTableOutputSlot;
 import com.blakebr0.extendedcrafting.container.slot.TableOutputSlot;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ResultContainer;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 public class AdvancedAutoTableContainer extends BaseContainerMenu {
+	private final ContainerData data;
 	private final Level level;
 	private final Container result;
+	private final ExtendedCraftingInventory matrix;
 
-	private AdvancedAutoTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
-		this(type, id, playerInventory, AutoTableTileEntity.Advanced.createInventoryHandler(), buffer.readBlockPos());
+	public AdvancedAutoTableContainer(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
+		this(id, playerInventory, AutoTableTileEntity.Advanced.createInventoryHandler(), new SimpleContainerData(6), buffer.readBlockPos());
 	}
 
-	private AdvancedAutoTableContainer(MenuType<?> type, int id, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		super(type, id, pos);
+	public AdvancedAutoTableContainer(int id, Inventory playerInventory, CItemStacksHandler inventory, ContainerData data, BlockPos pos) {
+		super(ModMenuTypes.ADVANCED_AUTO_TABLE.get(), id, pos);
+		this.data = data;
 		this.level = playerInventory.player.level();
 		this.result = new ResultContainer();
+		this.matrix = new ExtendedCraftingInventory(this, inventory, 5, true);
 
-		var matrix = new ExtendedCraftingInventory(this, inventory, 5, true);
-
-		this.addSlot(new TableOutputSlot(this, matrix, this.result, 0, 154, 37));
+		this.addSlot(new TableOutputSlot(this, this.matrix, this.result, 0, 154, 37));
 		
 		int i, j;
 		for (i = 0; i < 5; i++) {
 			for (j = 0; j < 5; j++) {
-				this.addSlot(new Slot(matrix, j + i * 5, 26 + j * 18, 18 + i * 18));
+				this.addSlot(new ResourceHandlerSlot(inventory, this.matrix::set, j + i * 5, 26 + j * 18, 18 + i * 18));
 			}
 		}
 
-		this.addSlot(new AutoTableOutputSlot(this, matrix, inventory, 25, 154, 81));
+		this.addSlot(new AutoTableOutputSlot(this, this.matrix, inventory, 25, 154, 81));
 
 		for (i = 0; i < 3; i++) {
 			for (j = 0; j < 9; j++) {
@@ -55,18 +60,21 @@ public class AdvancedAutoTableContainer extends BaseContainerMenu {
 			this.addSlot(new Slot(playerInventory, j, 13 + j * 18, 182));
 		}
 
-		this.slotsChanged(matrix);
+		this.addDataSlots(data);
+		this.slotsChanged(this.matrix);
 	}
 
 	@Override
 	public void slotsChanged(Container matrix) {
-        if (this.level.isClientSide) {
+        if (this.level.isClientSide()) {
             return;
         }
-		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, this.level);
+
+		var inventory = this.matrix.asCraftInput();
+		var recipe = ((ServerLevel) this.level).recipeAccess().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level);
 
 		if (recipe.isPresent()) {
-			var result = recipe.get().assemble(matrix, this.level.registryAccess());
+			var result = recipe.get().value().assemble(inventory);
 			this.result.setItem(0, result);
 		} else {
 			this.result.setItem(0, ItemStack.EMPTY);
@@ -114,11 +122,27 @@ public class AdvancedAutoTableContainer extends BaseContainerMenu {
 		return itemstack;
 	}
 
-	public static AdvancedAutoTableContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new AdvancedAutoTableContainer(ModContainerTypes.ADVANCED_AUTO_TABLE.get(), windowId, playerInventory, buffer);
+	public int getEnergyStored() {
+		return this.data.get(0);
 	}
 
-	public static AdvancedAutoTableContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new AdvancedAutoTableContainer(ModContainerTypes.ADVANCED_AUTO_TABLE.get(), windowId, playerInventory, inventory, pos);
+	public int getMaxEnergyCapacity() {
+		return this.data.get(1);
+	}
+
+	public int getProgress() {
+		return this.data.get(2);
+	}
+
+	public int getProgressRequired() {
+		return this.data.get(3);
+	}
+
+	public boolean isRunning() {
+		return this.data.get(4) != 0;
+	}
+
+	public int getSelectedRecipeIndex() {
+		return this.data.get(5);
 	}
 }

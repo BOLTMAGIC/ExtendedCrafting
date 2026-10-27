@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:flux_crafter"
+    }
+  ],
+  "pattern": [
+    "EEE",
+    "ICI",
+    "III"
+  ],
+  "key": {
+    "E": "#c:ingots/gold",
+    "I": "extendedcrafting:redstone_ingot",
+    "C": "minecraft:crafting_table"
+  },
+  "result": {
+    "id": "extendedcrafting:flux_crafter"
+  }
+}

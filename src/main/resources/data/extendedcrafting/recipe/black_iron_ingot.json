@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#c:ingots/iron",
+    "#c:dyes/black"
+  ],
+  "result": {
+    "id": "extendedcrafting:black_iron_ingot"
+  }
+}

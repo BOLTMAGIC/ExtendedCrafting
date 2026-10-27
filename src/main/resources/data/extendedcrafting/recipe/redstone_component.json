@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "extendedcrafting:black_iron_slate",
+    "extendedcrafting:luminessence",
+    "extendedcrafting:redstone_ingot",
+    "extendedcrafting:redstone_ingot"
+  ],
+  "result": {
+    "id": "extendedcrafting:redstone_component"
+  }
+}

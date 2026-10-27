@@ -1,5 +1,5 @@
 {
-  "itemGroup.extendedcrafting": "Extended Crafting: Expanded Plus",
+  "itemGroup.extendedcrafting": "Extended Crafting",
 
   "block.extendedcrafting.luminessence_block": "Блок люминесценции",
   "block.extendedcrafting.black_iron_block": "Блок чёрного железа",
@@ -88,19 +88,14 @@
   "tooltip.extendedcrafting.mode": "Режим: %s",
   "tooltip.extendedcrafting.type": "Тип: %s",
   "tooltip.extendedcrafting.num_items": "%s предметов",
-  "tooltip.extendedcrafting.ticks": "%s тиков",
   "tooltip.extendedcrafting.requires_table": "Требуется верстак %s уровня",
-  "tooltip.extendedcrafting.items_required": "Необходимые предметы::",
   "tooltip.extendedcrafting.singularity_id": "ID сингулярности: %s",
   "tooltip.extendedcrafting.added_by": "Добавлено: %s",
 
   "message.extendedcrafting.changed_mode": "Режим изменён на %s.",
   "message.extendedcrafting.copied_recipe": "Рецепт скопирован в буфер обмена.",
-  "message.extendedcrafting.nbt_requires_crafttweaker": "CraftTweaker требуется для копирования NBT.",
+  "message.extendedcrafting.data_components_requires_crafttweaker": "CraftTweaker требуется для копирования Data Components.",
   "message.extendedcrafting.max_unique_items_exceeded": "Вы можете иметь максимум (%s) однотипных предметов в сформированном рецепте из дата-пака.",
-  "message.extendedcrafting.no_items_in_grid": "В сетке нет элементов для копирования.",
-  "message.extendedcrafting.no_output_item_warning": "В первом слоте быстрого доступа нет предмета. Вы можете положить выходной предмет в первый слот, чтобы включить его в копируемый рецепт.",
-  "message.extendedcrafting.remove_output_items": "Нельзя переключить режим вытряхивания — в выходном слоте есть предметы. Пожалуйста, сначала уберите предметы из выхода.",
 
   "jei.category.extendedcrafting.combination": "Комбинированное создание",
   "jei.category.extendedcrafting.basic_crafting": "Создание на базовом верстаке",
@@ -144,7 +139,7 @@
   "book.extendedcrafting.entry.combination.page.1": "Combination Crafting is an in-world multi-block crafting setup where items are combined together to create something $(italic)special.$() $(br2)This setup consists of a Crafting Core in the center and pedestals placed around it. Pedestals can be placed anywhere around the Crafting Core in a 3 block radius, and must be on the same Y level.",
   "book.extendedcrafting.entry.combination.page.2": "Power must be provided to the Crafting Core for this structure to function. $(br2)Recipes have a center item which goes on the Crafting Core, and pedestal items which go on the pedestals around it. $(br)Right clicking on the side of the Crafting Core will show you information about the current crafting operation, such as progress or power cost, as well as how much power is stored in it.",
   "book.extendedcrafting.entry.tables": "Table Crafting",
-  "book.extendedcrafting.entry.tables.page.1": "This mod adds tiered crafting tables that come in $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$(), $(bold)9x9$() , $(bold)11x11$() , and $(bold)13x13$() sizes. These tables hold their inventories when closed.",
+  "book.extendedcrafting.entry.tables.page.1": "This mod adds tiered crafting tables that come in $(bold)3x3$(), $(bold)5x5$(), $(bold)7x7$(), and $(bold)9x9$() sizes. These tables hold their inventories when closed.",
   "book.extendedcrafting.entry.compression": "Compression Crafting",
   "book.extendedcrafting.entry.compression.page.1": "Quantum Compression is the process of compressing items a little too much. This is done using a Quantum Compressor. $(br2)The Quantum Compressor is a powered machine that can hold and compress extremely large amounts of materials. Items placed inside the Quantum Compressor go into an internal buffer for use in compression. The buffer is represented as a blue bar.",
   "book.extendedcrafting.entry.compression.page.2": "Each recipe $(bold)usually$() requires a catalyst. The catalyst is placed in the left-most slot and does not get used up. $(br2)Once there are enough items in the buffer, the machine will begin to craft the item. The Quantum Compressor will only use power while crafting. $(br2)If you happen to put items into the compressor that you would rather not lose forever, you can press the eject button above the input slot to get them back.",
@@ -163,5 +158,7 @@
   "book.extendedcrafting.entry.ultimate_singularity.page.1": "The Ultimate Singularity is $(bold)usually$() made in the $(l:crafting/tables)Ultimate Crafting Table$(). $(br2)It is $(bold)usually$() made of all, if not most, of the available singularities.",
 
   "book.extendedcrafting.entry.handheld_table": "Handheld Crafting Table",
-  "book.extendedcrafting.entry.handheld_table.page.1": "The Handheld Crafting Table is a Crafting Table."
+  "book.extendedcrafting.entry.handheld_table.page.1": "The Handheld Crafting Table is a Crafting Table.",
+
+  "message.extendedcrafting.no_output_item_warning": "В первом слоте быстрого доступа нет предмета. Вы можете положить выходной предмет в первый слот, чтобы включить его в копируемый рецепт."
 }

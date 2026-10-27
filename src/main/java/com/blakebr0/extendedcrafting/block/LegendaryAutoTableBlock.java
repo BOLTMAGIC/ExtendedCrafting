@@ -1,101 +1,119 @@
 package com.blakebr0.extendedcrafting.block;
 
 import com.blakebr0.cucumber.block.BaseTileEntityBlock;
-import com.blakebr0.cucumber.helper.NBTHelper;
+import com.blakebr0.cucumber.helper.BlockHelper;
+import com.blakebr0.cucumber.iface.IHoverTextProvider;
 import com.blakebr0.cucumber.util.VoxelShapeBuilder;
+import com.blakebr0.extendedcrafting.ExtendedCrafting;
+import com.blakebr0.extendedcrafting.init.ModDataComponentTypes;
+import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkHooks;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-public class LegendaryAutoTableBlock extends BaseTileEntityBlock {
-	public static final VoxelShape LEGENDARY_AUTO_TABLE_SHAPE = VoxelShapeBuilder.builder()
-			.cuboid(2, 0, 2, 14, 2, 14)
-			.cuboid(3, 2, 3, 5, 10, 5)
-			.cuboid(11, 2, 11, 13, 10, 13)
-			.cuboid(11, 2, 3, 13, 10, 5)
-			.cuboid(3, 2, 11, 5, 10, 13)
-			.cuboid(0, 10, 0, 16, 16, 16)
-			.cuboid(4, 2, 4, 12, 10, 12)
-			.build();
+public class LegendaryAutoTableBlock extends BaseTileEntityBlock implements IHoverTextProvider {
+    public static final VoxelShape LEGENDARY_AUTO_TABLE_SHAPE = VoxelShapeBuilder.builder()
+            .cuboid(2, 0, 2, 14, 2, 14)
+            .cuboid(3, 2, 3, 5, 10, 5)
+            .cuboid(11, 2, 11, 13, 10, 13)
+            .cuboid(11, 2, 3, 13, 10, 5)
+            .cuboid(3, 2, 11, 5, 10, 13)
+            .cuboid(0, 10, 0, 16, 16, 16)
+            .cuboid(4, 2, 4, 12, 10, 12)
+            .build();
 
-	public LegendaryAutoTableBlock() {
-		super(SoundType.METAL, 5.0F, 10.0F, true);
-	}
+    public LegendaryAutoTableBlock(Identifier id) {
+        super(id, SoundType.METAL, 5.0F, 10.0F, true);
+    }
 
-	@Override
-	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return new AutoTableTileEntity.Legendary(pos, state);
-	}
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new AutoTableTileEntity.Legendary(pos, state);
+    }
 
-	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
-		if (!level.isClientSide()) {
-			var tile = level.getBlockEntity(pos);
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (!level.isClientSide()) {
+            var tile = level.getBlockEntity(pos);
 
-			if (tile instanceof AutoTableTileEntity.Legendary table) {
-				NetworkHooks.openScreen((ServerPlayer) player, table, pos);
-			}
-		}
+            if (tile instanceof AutoTableTileEntity.Legendary table) {
+                player.openMenu(table, pos);
+            }
+        }
 
-		return InteractionResult.SUCCESS;
-	}
+        return InteractionResult.SUCCESS;
+    }
 
-	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (state.getBlock() != newState.getBlock()) {
-			var tile = level.getBlockEntity(pos);
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
+        var storage = stack.get(ModDataComponentTypes.TABLE_RECIPE_STORAGE);
+        if (storage != null) {
+            var tile = level.getBlockEntity(pos);
 
-			if (tile instanceof AutoTableTileEntity.Legendary table) {
-				Containers.dropContents(level, pos, table.getInventory().getStacks());
-			}
-		}
+            if (tile instanceof AutoTableTileEntity.Legendary table) {
+                try (var reporter = new ProblemReporter.ScopedCollector(ExtendedCrafting.LOGGER)) {
+                    var tag = TagValueInput.create(reporter, level.registryAccess(), storage.data());
 
-		super.onRemove(state, level, pos, newState, isMoving);
-	}
+                    if (reporter.isEmpty()) {
+                        table.getRecipeStorage().deserialize(tag);
+                    }
+                }
+            }
+        }
+    }
 
-	@Override
-	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-		return LEGENDARY_AUTO_TABLE_SHAPE;
-	}
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return LEGENDARY_AUTO_TABLE_SHAPE;
+    }
 
-	@OnlyIn(Dist.CLIENT)
-	@Override
-	public void appendHoverText(ItemStack stack, BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(ModTooltips.TIER.args(6).build());
-	}
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+        builder.accept(ModTooltips.TIER.args(6).toComponent());
 
-	@Override
-	public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
-		if (NBTHelper.hasKey(stack, "RecipeStorage")) {
-			var tile = level.getBlockEntity(pos);
+        var storage = stack.get(ModDataComponentTypes.TABLE_RECIPE_STORAGE);
+        if (storage != null && storage.recipeCount() > 0) {
+            builder.accept(ModTooltips.RECIPE_COUNT.args(storage.recipeCount()).toComponent());
+        }
+    }
 
-			if (tile instanceof AutoTableTileEntity.Legendary table) {
-				var storage = stack.getTag().getCompound("RecipeStorage");
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
 
-				table.getRecipeStorage().deserializeNBT(storage);
-			}
-		}
-	}
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+        return BlockHelper.getRedstoneSignalFromInventory(level.getBlockEntity(pos));
+    }
+
+    @Override
+    protected <T extends BlockEntity> BlockEntityTicker<T> getServerTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return createTicker(type, ModTileEntities.LEGENDARY_AUTO_TABLE.get(), AutoTableTileEntity::tick);
+    }
 }
