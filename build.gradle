@@ -6,7 +6,7 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.141'
 }
 
-version = '26.1.2-8.1.0'
+version = '26.1.2-1.0.0'
 group = 'com.witherschat.extendedcrafting'
 
 base {
