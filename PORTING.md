@@ -63,12 +63,18 @@ The mixin has one required injection. Bytecode inspection establishes the vanill
 call site, but actual NeoForge mixin application still requires runtime validation.
 The inspected Mojang JAR is outside the repository and must not be committed.
 
+The shipped Forge 6.1.9 VH helper was also audited. Its config registration and
+refmap are missing, and its redirected allocation factory is unbounded. See
+[the VH audit](docs/vhtablefix-audit.md) for the artifact identity and how this
+branch addresses those findings using NeoForge metadata and the new codec.
+The named 26.1.2 mixin target explicitly disables obsolete SRG remapping.
+
 ## Validation boundary
 
 Source/data review only: no Gradle task, build, GameTest, client, or dedicated
 server has been run. The user/project rule requires separate authorization for
 builds/tests. This is a source contribution; no JAR was installed or published.
-Existing Forge 1.20.1 checkout was left unchanged.
+The Forge 1.20.1 correction is maintained separately from this NeoForge port.
 
 Completed static checks: all 379 resource JSON files and the mod TOML parse;
 added models/textures and imports within this mod resolve to existing files;
