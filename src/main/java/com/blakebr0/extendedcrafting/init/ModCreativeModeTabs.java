@@ -1,8 +1,8 @@
 package com.blakebr0.extendedcrafting.init;
 
-import com.blakebr0.cucumber.helper.NBTHelper;
 import com.blakebr0.cucumber.util.FeatureFlagDisplayItemGenerator;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
+import com.blakebr0.extendedcrafting.api.component.RecipeMakerComponent;
 import com.blakebr0.extendedcrafting.config.ModFeatureFlags;
 import com.blakebr0.extendedcrafting.singularity.SingularityRegistry;
 import com.blakebr0.extendedcrafting.singularity.SingularityUtils;
@@ -10,17 +10,16 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ExtendedCrafting.MOD_ID);
 
-    @SuppressWarnings("unused")
-    public static final RegistryObject<CreativeModeTab> CREATIVE_TAB = REGISTRY.register("creative_tab", () -> CreativeModeTab.builder()
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = REGISTRY.register("creative_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.extendedcrafting"))
             .icon(() -> new ItemStack(ModItems.LUMINESSENCE.get()))
-            .displayItems(FeatureFlagDisplayItemGenerator.create((parameters, output) -> {
+            .displayItems(FeatureFlagDisplayItemGenerator.create((_, output) -> {
                 var stack = ItemStack.EMPTY;
 
                 output.accept(ModBlocks.LUMINESSENCE_BLOCK);
@@ -101,23 +100,16 @@ public final class ModCreativeModeTabs {
                 output.accept(ModItems.HANDHELD_TABLE, ModFeatureFlags.HANDHELD_WORKBENCH);
 
                 stack = new ItemStack(ModItems.RECIPE_MAKER.get());
-                NBTHelper.setBoolean(stack, "Shapeless", false);
-                NBTHelper.setString(stack, "Type", "Datapack");
+                stack.set(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.datapack());
                 output.accept(stack, ModFeatureFlags.RECIPE_MAKER);
 
                 stack = new ItemStack(ModItems.RECIPE_MAKER.get());
-                NBTHelper.setBoolean(stack, "Shapeless", false);
-                NBTHelper.setString(stack, "Type", "CraftTweaker");
-                output.accept(stack, ModFeatureFlags.RECIPE_MAKER);
-
-                stack = new ItemStack(ModItems.RECIPE_MAKER.get());
-                NBTHelper.setBoolean(stack, "Shapeless", false);
-                NBTHelper.setString(stack, "Type", "KubeJS");
+                stack.set(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.crafttweaker());
                 output.accept(stack, ModFeatureFlags.RECIPE_MAKER);
 
                 for (var singularity : SingularityRegistry.getInstance().getSingularities()) {
                     if (singularity.isEnabled()) {
-                        output.accept(SingularityUtils.getItemForSingularity(singularity), ModFeatureFlags.SINGULARITIES);
+                        output.accept(SingularityUtils.getItemForSingularity(singularity).create(), ModFeatureFlags.SINGULARITIES);
                     }
                 }
 

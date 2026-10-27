@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": "minecraft:nether_star"
+  },
+  "result": {
+    "id": "extendedcrafting:nether_star_block"
+  }
+}

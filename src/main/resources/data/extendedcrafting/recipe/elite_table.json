@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:tables"
+    }
+  ],
+  "pattern": [
+    "BAB",
+    "CIC",
+    "BSB"
+  ],
+  "key": {
+    "I": "#c:storage_blocks/diamond",
+    "C": [
+      "extendedcrafting:advanced_table",
+      "extendedcrafting:advanced_auto_table"
+    ],
+    "B": "extendedcrafting:elite_component",
+    "S": "extendedcrafting:black_iron_slate",
+    "A": "extendedcrafting:elite_catalyst"
+  },
+  "result": {
+    "id": "extendedcrafting:elite_table"
+  }
+}

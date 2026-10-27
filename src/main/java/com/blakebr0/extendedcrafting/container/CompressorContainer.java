@@ -1,29 +1,34 @@
 package com.blakebr0.extendedcrafting.container;
 
 import com.blakebr0.cucumber.container.BaseContainerMenu;
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import com.blakebr0.cucumber.inventory.slot.BaseItemStackHandlerSlot;
-import com.blakebr0.cucumber.inventory.slot.OutputSlot;
+import com.blakebr0.cucumber.inventory.CItemStacksHandler;
+import com.blakebr0.cucumber.inventory.slot.COutputSlot;
+import com.blakebr0.cucumber.inventory.slot.CSlot;
 import com.blakebr0.extendedcrafting.container.slot.CatalystSlot;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.tileentity.CompressorTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class CompressorContainer extends BaseContainerMenu {
-	private CompressorContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
-		this(type, id, playerInventory, CompressorTileEntity.createInventoryHandler(), buffer.readBlockPos());
+	private final ContainerData data;
+
+	public CompressorContainer(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
+		this(id, playerInventory, CompressorTileEntity.createInventoryHandler(), new SimpleContainerData(8), buffer.readBlockPos());
 	}
 
-	private CompressorContainer(MenuType<?> type, int id, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		super(type, id, pos);
-		this.addSlot(new OutputSlot(inventory, 0, 135, 48));
-		this.addSlot(new BaseItemStackHandlerSlot(inventory, 1, 65, 48));
+	public CompressorContainer(int id, Inventory playerInventory, CItemStacksHandler inventory, ContainerData data, BlockPos pos) {
+		super(ModMenuTypes.COMPRESSOR.get(), id, pos);
+		this.data = data;
+
+		this.addSlot(new COutputSlot(inventory, 0, 135, 48));
+		this.addSlot(new CSlot(inventory, 1, 65, 48));
 		this.addSlot(new CatalystSlot(inventory, 2, 38, 48));
 
 		for (int i = 0; i < 3; i++) {
@@ -35,6 +40,8 @@ public class CompressorContainer extends BaseContainerMenu {
 		for (int i = 0; i < 9; i++) {
 			this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 170));
 		}
+
+		this.addDataSlots(data);
 	}
 
 	@Override
@@ -85,11 +92,35 @@ public class CompressorContainer extends BaseContainerMenu {
 		return itemstack;
 	}
 
-	public static CompressorContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new CompressorContainer(ModContainerTypes.COMPRESSOR.get(), windowId, playerInventory, buffer);
+	public int getEnergyStored() {
+		return this.data.get(0);
 	}
 
-	public static CompressorContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new CompressorContainer(ModContainerTypes.COMPRESSOR.get(), windowId, playerInventory, inventory, pos);
+	public int getMaxEnergyCapacity() {
+		return this.data.get(1);
+	}
+
+	public int getProgress() {
+		return this.data.get(2);
+	}
+
+	public int getEnergyRequired() {
+		return this.data.get(3);
+	}
+
+	public int getMaterialCount() {
+		return this.data.get(4);
+	}
+
+	public int getMaterialsRequired() {
+		return this.data.get(5);
+	}
+
+	public boolean isEjecting() {
+		return this.data.get(6) != 0;
+	}
+
+	public boolean isLimitingInput() {
+		return this.data.get(7) != 0;
 	}
 }

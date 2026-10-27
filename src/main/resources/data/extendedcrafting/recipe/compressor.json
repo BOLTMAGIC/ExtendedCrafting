@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:compressor"
+    }
+  ],
+  "pattern": [
+    "CBC",
+    "AIA",
+    "CSC"
+  ],
+  "key": {
+    "I": "extendedcrafting:frame",
+    "B": "extendedcrafting:elite_component",
+    "S": "extendedcrafting:black_iron_slate",
+    "C": "extendedcrafting:black_iron_ingot",
+    "A": "extendedcrafting:elite_catalyst"
+  },
+  "result": {
+    "id": "extendedcrafting:compressor"
+  }
+}

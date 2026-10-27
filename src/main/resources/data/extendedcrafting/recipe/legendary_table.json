@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BAB",
+    "CIC",
+    "BSB"
+  ],
+  "key": {
+    "I": "#c:storage_blocks/netherite",
+    "C": [
+      "extendedcrafting:epic_table",
+      "extendedcrafting:epic_auto_table"
+    ],
+    "B": "extendedcrafting:enhanced_ender_component",
+    "S": "extendedcrafting:black_iron_slate",
+    "A": "extendedcrafting:enhanced_ender_catalyst"
+  },
+  "result": {
+    "id": "extendedcrafting:legendary_table"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:tables"
+    }
+  ]
+}

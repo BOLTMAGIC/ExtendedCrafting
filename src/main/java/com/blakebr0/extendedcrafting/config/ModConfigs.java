@@ -1,77 +1,78 @@
 package com.blakebr0.extendedcrafting.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class ModConfigs {
-	public static final ForgeConfigSpec CLIENT;
-	public static final ForgeConfigSpec COMMON;
+	public static final ModConfigSpec CLIENT;
+	public static final ModConfigSpec COMMON;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_COMPRESSOR_RENDERER;
+	public static final ModConfigSpec.BooleanValue ENABLE_COMPRESSOR_RENDERER;
 
 	// Client
 	static {
-		final var client = new ForgeConfigSpec.Builder();
+		final var client = new ModConfigSpec.Builder();
 
 		client.comment("Client settings.").push("General");
 		ENABLE_COMPRESSOR_RENDERER = client
-				.comment("Should the Quantum Compressor render the result item above it?")
+				.comment("Should the Quantum Compressor render the result stack above it?")
 				.define("enableCompressorRenderer", true);
 		client.pop();
 
 		CLIENT = client.build();
 	}
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_HANDHELD_WORKBENCH;
+	public static final ModConfigSpec.BooleanValue ENABLE_HANDHELD_WORKBENCH;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_CRAFTING_CORE;
-	public static final ForgeConfigSpec.IntValue CRAFTING_CORE_POWER_CAPACITY;
-	public static final ForgeConfigSpec.IntValue CRAFTING_CORE_POWER_RATE;
+	public static final ModConfigSpec.BooleanValue ENABLE_CRAFTING_CORE;
+	public static final ModConfigSpec.IntValue CRAFTING_CORE_POWER_CAPACITY;
+	public static final ModConfigSpec.IntValue CRAFTING_CORE_POWER_RATE;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_TABLES;
-	public static final ForgeConfigSpec.BooleanValue ENABLE_AUTO_TABLES;
-	public static final ForgeConfigSpec.BooleanValue TABLE_USE_VANILLA_RECIPES;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_POWER_CAPACITY;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_POWER_RATE;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_INSERT_POWER_RATE;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_BASIC_CRAFTING_TIME;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_ADVANCED_CRAFTING_TIME;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_ELITE_CRAFTING_TIME;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_ULTIMATE_CRAFTING_TIME;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_EPIC_CRAFTING_TIME;
-	public static final ForgeConfigSpec.IntValue AUTO_TABLE_LEGENDARY_CRAFTING_TIME;
+	public static final ModConfigSpec.BooleanValue ENABLE_TABLES;
+	public static final ModConfigSpec.BooleanValue ENABLE_AUTO_TABLES;
+	public static final ModConfigSpec.BooleanValue TABLE_USE_VANILLA_RECIPES;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_BASIC_CRAFTING_TIME;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_ADVANCED_CRAFTING_TIME;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_ELITE_CRAFTING_TIME;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_ULTIMATE_CRAFTING_TIME;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_EPIC_CRAFTING_TIME;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_LEGENDARY_CRAFTING_TIME;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_POWER_CAPACITY;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_POWER_RATE;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_INSERT_POWER_RATE;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_COMPRESSOR;
-	public static final ForgeConfigSpec.IntValue COMPRESSOR_POWER_CAPACITY;
-	public static final ForgeConfigSpec.IntValue COMPRESSOR_POWER_RATE;
+	public static final ModConfigSpec.BooleanValue ENABLE_COMPRESSOR;
+	public static final ModConfigSpec.IntValue COMPRESSOR_POWER_CAPACITY;
+	public static final ModConfigSpec.IntValue COMPRESSOR_POWER_RATE;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_ENDER_CRAFTER;
-	public static final ForgeConfigSpec.BooleanValue ENABLE_AUTO_ENDER_CRAFTER;
-	public static final ForgeConfigSpec.IntValue ENDER_CRAFTER_TIME_REQUIRED;
-	public static final ForgeConfigSpec.DoubleValue ENDER_CRAFTER_ALTERNATOR_EFFECTIVENESS;
-	public static final ForgeConfigSpec.IntValue AUTO_ENDER_CRAFTER_POWER_CAPACITY;
-	public static final ForgeConfigSpec.IntValue AUTO_ENDER_CRAFTER_INSERT_POWER_RATE;
+	public static final ModConfigSpec.BooleanValue ENABLE_ENDER_CRAFTER;
+	public static final ModConfigSpec.BooleanValue ENABLE_AUTO_ENDER_CRAFTER;
+	public static final ModConfigSpec.IntValue ENDER_CRAFTER_TIME_REQUIRED;
+	public static final ModConfigSpec.DoubleValue ENDER_CRAFTER_ALTERNATOR_EFFECTIVENESS;
+	public static final ModConfigSpec.IntValue AUTO_ENDER_CRAFTER_POWER_CAPACITY;
+	public static final ModConfigSpec.IntValue AUTO_ENDER_CRAFTER_INSERT_POWER_RATE;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_FLUX_CRAFTER;
-	public static final ForgeConfigSpec.BooleanValue ENABLE_AUTO_FLUX_CRAFTER;
-	public static final ForgeConfigSpec.IntValue FLUX_CRAFTER_POWER_RATE;
-	public static final ForgeConfigSpec.IntValue FLUX_ALTERNATOR_POWER_CAPACITY;
-	public static final ForgeConfigSpec.IntValue AUTO_FLUX_CRAFTER_POWER_CAPACITY;
-	public static final ForgeConfigSpec.IntValue AUTO_FLUX_CRAFTER_INSERT_POWER_RATE;
+	public static final ModConfigSpec.BooleanValue ENABLE_FLUX_CRAFTER;
+	public static final ModConfigSpec.BooleanValue ENABLE_AUTO_FLUX_CRAFTER;
+	public static final ModConfigSpec.IntValue FLUX_CRAFTER_POWER_RATE;
+	public static final ModConfigSpec.IntValue FLUX_ALTERNATOR_POWER_CAPACITY;
+	public static final ModConfigSpec.IntValue AUTO_FLUX_CRAFTER_POWER_CAPACITY;
+	public static final ModConfigSpec.IntValue AUTO_FLUX_CRAFTER_INSERT_POWER_RATE;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_SINGULARITIES;
-	public static final ForgeConfigSpec.IntValue SINGULARITY_MATERIALS_REQUIRED;
-	public static final ForgeConfigSpec.IntValue SINGULARITY_POWER_REQUIRED;
-	public static final ForgeConfigSpec.BooleanValue SINGULARITY_DEFAULT_RECIPES;
-	public static final ForgeConfigSpec.ConfigValue<String> SINGULARITY_DEFAULT_CATALYST;
-	public static final ForgeConfigSpec.BooleanValue SINGULARITY_ULTIMATE_RECIPE;
+	public static final ModConfigSpec.BooleanValue ENABLE_SINGULARITIES;
+	public static final ModConfigSpec.IntValue SINGULARITY_INGREDIENTS_REQUIRED;
+	public static final ModConfigSpec.IntValue SINGULARITY_POWER_REQUIRED;
+	public static final ModConfigSpec.BooleanValue SINGULARITY_DEFAULT_RECIPES;
+	public static final ModConfigSpec.ConfigValue<String> SINGULARITY_DEFAULT_CATALYST;
+	public static final ModConfigSpec.BooleanValue SINGULARITY_ULTIMATE_RECIPE;
 
-	public static final ForgeConfigSpec.BooleanValue ENABLE_RECIPE_MAKER;
-	public static final ForgeConfigSpec.BooleanValue RECIPE_MAKER_USE_TAGS;
-	public static final ForgeConfigSpec.BooleanValue RECIPE_MAKER_USE_NBT;
+	public static final ModConfigSpec.BooleanValue ENABLE_RECIPE_MAKER;
+	public static final ModConfigSpec.BooleanValue RECIPE_MAKER_USE_TAGS;
+	public static final ModConfigSpec.BooleanValue RECIPE_MAKER_USE_DATA_COMPONENTS;
 
 	// Common
 	static {
-		final var common = new ForgeConfigSpec.Builder();
+		final var common = new ModConfigSpec.Builder();
 
 		common.comment("Settings for general things.").push("General");
 		ENABLE_HANDHELD_WORKBENCH = common
@@ -101,6 +102,24 @@ public final class ModConfigs {
 		TABLE_USE_VANILLA_RECIPES = common
 				.comment("Should the Basic Crafting Table inherit vanilla crafting recipes?")
 				.define("useVanillaRecipes", true);
+		AUTO_TABLE_BASIC_CRAFTING_TIME = common
+				.comment("How many ticks the Basic Auto Table takes to craft.")
+				.defineInRange("autoTableBasicCraftTime", 8, 1, Integer.MAX_VALUE);
+		AUTO_TABLE_ADVANCED_CRAFTING_TIME = common
+				.comment("How many ticks the Advanced Auto Table takes to craft.")
+				.defineInRange("autoTableAdvancedCraftTime", 8, 1, Integer.MAX_VALUE);
+		AUTO_TABLE_ELITE_CRAFTING_TIME = common
+				.comment("How many ticks the Elite Auto Table takes to craft.")
+				.defineInRange("autoTableEliteCraftTime", 8, 1, Integer.MAX_VALUE);
+		AUTO_TABLE_ULTIMATE_CRAFTING_TIME = common
+				.comment("How many ticks the Ultimate Auto Table takes to craft.")
+				.defineInRange("autoTableUltimateCraftTime", 8, 1, Integer.MAX_VALUE);
+		AUTO_TABLE_EPIC_CRAFTING_TIME = common
+				.comment("How many ticks the Epic Auto Table takes to craft.")
+				.defineInRange("autoTableEpicCraftTime", 8, 1, Integer.MAX_VALUE);
+		AUTO_TABLE_LEGENDARY_CRAFTING_TIME = common
+				.comment("How many ticks the Legendary Auto Table takes to craft.")
+				.defineInRange("autoTableLegendaryCraftTime", 8, 1, Integer.MAX_VALUE);
 		AUTO_TABLE_POWER_CAPACITY = common
 				.comment("How much FE the Auto Crafting Tables should hold. Higher tiers use double the previous tier.")
 				.defineInRange("autoTablePowerCapacity", 500000, 0, Integer.MAX_VALUE);
@@ -110,24 +129,6 @@ public final class ModConfigs {
 		AUTO_TABLE_INSERT_POWER_RATE = common
 				.comment("How much FE the Auto Crafting Tables should use when auto inserting items.")
 				.defineInRange("autoTableInsertPowerRate", 100, 0, Integer.MAX_VALUE);
-		AUTO_TABLE_BASIC_CRAFTING_TIME = common
-				.comment("How many ticks the Basic Auto Table takes to craft")
-				.defineInRange("autoTableBasicCraftTime", 8, 1, Integer.MAX_VALUE);
-		AUTO_TABLE_ADVANCED_CRAFTING_TIME = common
-				.comment("How many ticks the Advanced Auto Table takes to craft")
-				.defineInRange("autoTableAdvancedCraftTime", 8, 1, Integer.MAX_VALUE);
-		AUTO_TABLE_ELITE_CRAFTING_TIME = common
-				.comment("How many ticks the Elite Auto Table takes to craft")
-				.defineInRange("autoTableEliteCraftTime", 8, 1, Integer.MAX_VALUE);
-		AUTO_TABLE_ULTIMATE_CRAFTING_TIME = common
-				.comment("How many ticks the Ultimate Auto Table takes to craft")
-				.defineInRange("autoTableUltimateCraftTime", 8, 1, Integer.MAX_VALUE);
-		AUTO_TABLE_EPIC_CRAFTING_TIME = common
-				.comment("How many ticks the Epic Auto Table takes to craft")
-				.defineInRange("autoTableEpicCraftTime", 8, 1, Integer.MAX_VALUE);
-		AUTO_TABLE_LEGENDARY_CRAFTING_TIME = common
-				.comment("How many ticks the Legendary Auto Table takes to craft")
-				.defineInRange("autoTableLegendaryCraftTime", 8, 1, Integer.MAX_VALUE);
 		common.pop();
 
 		common.comment("Settings for the Quantum Compressor.").push("Quantum Compression");
@@ -188,9 +189,9 @@ public final class ModConfigs {
 		ENABLE_SINGULARITIES = common
 				.comment("Should the Singularities be enabled?")
 				.define("enabled", true);
-		SINGULARITY_MATERIALS_REQUIRED = common
+		SINGULARITY_INGREDIENTS_REQUIRED = common
 				.comment("The default amount of items required to create a Singularity.")
-				.defineInRange("defaultMaterialsRequired", 10000, 1, Integer.MAX_VALUE);
+				.defineInRange("defaultIngredientsRequired", 10000, 1, Integer.MAX_VALUE);
 		SINGULARITY_POWER_REQUIRED = common
 				.comment("The default amount of FE required to create a Singularity.")
 				.defineInRange("defaultPowerRequired", 5000000, 0, Integer.MAX_VALUE);
@@ -198,7 +199,7 @@ public final class ModConfigs {
 				.comment("Should default recipes be generated for Singularities?")
 				.define("defaultRecipes", true);
 		SINGULARITY_DEFAULT_CATALYST = common
-				.comment("The item to use as the Catalyst in default Singularity recipes.")
+				.comment("The stack to use as the Catalyst in default Singularity recipes.")
 				.define("defaultCatalyst", "extendedcrafting:ultimate_catalyst");
 		SINGULARITY_ULTIMATE_RECIPE = common
 				.comment("Should the default recipe for the Ultimate Singularity be generated?")
@@ -212,11 +213,15 @@ public final class ModConfigs {
 		RECIPE_MAKER_USE_TAGS = common
 				.comment("Should the recipe maker try to use tags when possible?")
 				.define("useTags", false);
-		RECIPE_MAKER_USE_NBT = common
-				.comment("Should the recipe maker add NBT tags when possible?")
-				.define("useNBT", true);
+		RECIPE_MAKER_USE_DATA_COMPONENTS = common
+				.comment("Should the recipe maker add data components when possible?")
+				.define("useDataComponents", true);
 		common.pop();
 
 		COMMON = common.build();
+	}
+
+	public static boolean isCraftTweakerInstalled() {
+		return ModList.get().isLoaded("crafttweaker");
 	}
 }

@@ -1,130 +1,119 @@
 package com.blakebr0.extendedcrafting.crafting.recipe;
 
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
+import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.init.ModItems;
-import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
+import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.singularity.SingularityRegistry;
 import com.blakebr0.extendedcrafting.singularity.SingularityUtils;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraftforge.items.IItemHandler;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
+import net.neoforged.neoforge.common.util.RecipeMatcher;
 
-/**
- * Special shapeless recipe type for the Ultimate Singularity
- * with extra utility methods.
- */
-public class UltimateSingularityRecipe extends ShapelessTableRecipe {
-    private static boolean ingredientsLoaded = false;
+import java.util.ArrayList;
+import java.util.List;
 
-    /**
-     * Creates an instance of the UltimateSingularityRecipe.
-     * Something noteworthy is that the inputs list is a currently empty
-     * yet MUTABLE list, which allows UltimateSingularityRecipe::getIngredients
-     * to define the inputs.
-     * The recipe is always locked to table tier 5.
-     * @param recipeId Recipe ID (resource location)
-     * @param output Recipe output
-     */
-    public UltimateSingularityRecipe(ResourceLocation recipeId, ItemStack output) {
-        super(recipeId, NonNullList.create(), output, 5);
+public class UltimateSingularityRecipe implements ITableRecipe {
+    private static final UltimateSingularityRecipe INSTANCE = new UltimateSingularityRecipe();
+    private static final Object2BooleanOpenHashMap<UltimateSingularityRecipe> INGREDIENTS_LOADED = new Object2BooleanOpenHashMap<>();
+
+    public static final MapCodec<UltimateSingularityRecipe> MAP_CODEC = MapCodec.unit(INSTANCE);
+    public static final StreamCodec<RegistryFriendlyByteBuf, UltimateSingularityRecipe> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+    public static final RecipeSerializer<UltimateSingularityRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
+
+    private final List<Ingredient> ingredients;
+
+    public UltimateSingularityRecipe() {
+        this.ingredients = new ArrayList<>();
     }
 
-    /**
-     * If ingredients are loaded, just returns a list of input.
-     * If ingredients aren't loaded yet, dynamically loads a list of singularities
-     * as inputs.
-     * @return List of recipe ingredients
-     */
     @Override
-    public NonNullList<Ingredient> getIngredients() {
-        if (!ingredientsLoaded) {
-            super.getIngredients().clear();
+    public boolean matches(TableCraftingInput inventory, Level level) {
+        // ensure the ingredient list is initialized
+        var ingredients = this.getIngredients();
+
+        if (ingredients.isEmpty())
+            return false;
+
+        if (inventory.tier() != 4)
+            return false;
+
+        if (ingredients.size() != inventory.ingredientCount())
+            return false;
+
+        var inputs = NonNullList.<ItemStack>create();
+
+        for (var i = 0; i < inventory.size(); i++) {
+            var item = inventory.getItem(i);
+            if (!item.isEmpty()) {
+                inputs.add(item);
+            }
+        }
+
+        return RecipeMatcher.findMatches(inputs, this.ingredients) != null;
+    }
+
+    @Override
+    public ItemStack assemble(TableCraftingInput input) {
+        return new ItemStack(ModItems.ULTIMATE_SINGULARITY.get());
+    }
+
+    @Override
+    public RecipeSerializer<UltimateSingularityRecipe> getSerializer() {
+        return SERIALIZER;
+    }
+
+    @Override
+    public RecipeType<? extends Recipe<TableCraftingInput>> getType() {
+        return ModRecipeTypes.TABLE.get();
+    }
+
+    @Override
+    public int getTier() {
+        return 4;
+    }
+
+    @Override
+    public boolean hasRequiredTier() {
+        return true;
+    }
+
+    @Override
+    public List<Ingredient> getIngredients() {
+        if (!INGREDIENTS_LOADED.getOrDefault(this, false)) {
+            this.ingredients.clear();
 
             SingularityRegistry.getInstance().getSingularities()
                     .stream()
-                    .filter(singularity -> singularity.isInUltimateSingularity() && singularity.getIngredient() != Ingredient.EMPTY)
-                    .limit(121)
+                    .filter(singularity -> singularity.isInUltimateSingularity() && singularity.getIngredient().isPresent())
+                    .limit(81)
                     .map(SingularityUtils::getItemForSingularity)
-                    .map(Ingredient::of)
-                    .forEach(super.getIngredients()::add);
+                    .map(stack -> DataComponentIngredient.of(false, stack.components().split().added(), stack.item()))
+                    .forEach(this.ingredients::add);
 
-            ingredientsLoaded = true;
+            INGREDIENTS_LOADED.put(this, true);
         }
 
-        return super.getIngredients();
-    }
-
-    /**
-     * Checks whether the contents of the table matches the grid,
-     * but only returns true if the list of ingredients,
-     * which is dynamically generated, is not empty.
-     * @param inventory The table's inventory
-     * @return Whether the contents of the table match the recipe
-     */
-    @Override
-    public boolean matches(IItemHandler inventory) {
-        // ensure ingredients list is initialized
-        var ingredients = this.getIngredients();
-
-        // in the case there are no ingredients, the recipe should never match
-        return !ingredients.isEmpty() && super.matches(inventory);
+        return this.ingredients;
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipeSerializers.ULTIMATE_SINGULARITY.get();
+    public NonNullList<ItemStack> getRemainingItems(TableCraftingInput input) {
+        return CraftingRecipe.defaultCraftingReminder(input);
     }
 
-    /**
-     * Invalidates the recipe's ingredients, prompting
-     * ::getIngredients to load them again.
-     */
     public static void invalidate() {
-        ingredientsLoaded = false;
-    }
-
-    /**
-     * Recipe serializer. Defines:
-     * - Serializer::fromJson
-     * - Serializer::fromNetwork
-     * - Serializer::toNetwork
-     */
-    public static class Serializer implements RecipeSerializer<UltimateSingularityRecipe> {
-
-        /**
-         * Creates a UltimateSingularityRecipe with the given recipeId.
-         * Effectively ignores the contents of the JSON object.
-         * @param recipeId Recipe ID
-         * @param json JSON object that doesn't contain the recipe's data since it's auto generated
-         * @return Recipe for the Ultimate Singularity
-         */
-        @Override
-        public UltimateSingularityRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-            return new UltimateSingularityRecipe(recipeId, new ItemStack(ModItems.ULTIMATE_SINGULARITY.get()));
-        }
-
-        /**
-         * Just recreates the recipe since it's always the same.
-         * @param recipeId Recipe ID
-         * @param buffer Useless, please ignore.
-         * @return Recipe for the Ultimate Singularity
-         */
-        @Override
-        public UltimateSingularityRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-            return new UltimateSingularityRecipe(recipeId, new ItemStack(ModItems.ULTIMATE_SINGULARITY.get()));
-        }
-
-        /**
-         * Doesn't encode anything. The recipe is recreated in ::fromNetwork anyway.
-         * *visible disbelief*
-         * @param buffer Useless, please ignore
-         * @param recipe Useless, please ignore
-         */
-        @Override
-        public void toNetwork(FriendlyByteBuf buffer, UltimateSingularityRecipe recipe) { }
+        INGREDIENTS_LOADED.clear();
     }
 }

@@ -1,21 +1,23 @@
 package com.blakebr0.extendedcrafting.container.inventory;
 
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import net.minecraft.world.entity.player.Player;
+import com.blakebr0.cucumber.inventory.CItemStacksHandler;
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public class ExtendedCraftingInventory extends TransientCraftingContainer {
     private final AbstractContainerMenu container;
-    private final BaseItemStackHandler inventory;
+    private final CItemStacksHandler inventory;
     private final boolean autoTable;
 
-    public ExtendedCraftingInventory(AbstractContainerMenu container, BaseItemStackHandler inventory, int size) {
+    public ExtendedCraftingInventory(AbstractContainerMenu container, CItemStacksHandler inventory, int size) {
         this(container, inventory, size, false);
     }
 
-    public ExtendedCraftingInventory(AbstractContainerMenu container, BaseItemStackHandler inventory, int size, boolean autoTable) {
+    public ExtendedCraftingInventory(AbstractContainerMenu container, CItemStacksHandler inventory, int size, boolean autoTable) {
         super(container, size, size);
         this.container = container;
         this.inventory = inventory;
@@ -24,13 +26,13 @@ public class ExtendedCraftingInventory extends TransientCraftingContainer {
 
     @Override
     public int getContainerSize() {
-        return this.autoTable ? this.inventory.getSlots() - 1 : this.inventory.getSlots();
+        return this.autoTable ? this.inventory.size() - 1 : this.inventory.size();
     }
 
     @Override
     public boolean isEmpty() {
         for (int i = 0; i < this.getContainerSize(); i++) {
-            if (!this.inventory.getStackInSlot(i).isEmpty())
+            if (!this.inventory.getResource(i).isEmpty())
                 return false;
         }
 
@@ -39,45 +41,54 @@ public class ExtendedCraftingInventory extends TransientCraftingContainer {
 
     @Override
     public ItemStack getItem(int slot) {
-        return this.inventory.getStackInSlot(slot);
+        return this.inventory.getResource(slot).toStack(this.inventory.getAmountAsInt(slot));
     }
 
     @Override
     public ItemStack removeItem(int slot, int amount) {
-        var stack = this.inventory.extractItem(slot, amount, false, true);
+        try (var tx = Transaction.openRoot()) {
+            var resource = this.inventory.getResource(slot);
+            var removed = this.inventory.extract(slot, resource, amount, tx, true);
 
-        this.container.slotsChanged(this);
+            this.container.slotsChanged(this);
 
-        return stack;
+            tx.commit();
+
+            return resource.toStack(removed);
+        }
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        var stack = this.inventory.getStackInSlot(slot);
+        var stack = this.getItem(slot);
 
-        this.inventory.setStackInSlot(slot, ItemStack.EMPTY);
+        this.inventory.set(slot, ItemResource.EMPTY, 0);
 
         return stack;
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
-        this.inventory.setStackInSlot(slot, stack);
+        this.inventory.set(slot, ItemResource.of(stack), stack.count());
         this.container.slotsChanged(this);
-    }
-
-    @Override
-    public void setChanged() { }
-
-    @Override
-    public boolean stillValid(Player player) {
-        return true;
     }
 
     @Override
     public void clearContent() {
         for (int i = 0; i < this.getContainerSize(); i++) {
-            this.inventory.setStackInSlot(i, ItemStack.EMPTY);
+            this.inventory.set(i, ItemResource.EMPTY, 0);
         }
+    }
+
+    public TableCraftingInput asCraftInput() {
+        var width = this.getWidth();
+        var height = this.getHeight();
+        var tier = Math.floorDiv(width, 2);
+        return TableCraftingInput.of(width, height, this.inventory.getStacks().subList(0, width * height), tier);
+    }
+
+    public void set(int slot, ItemResource resource, int amount) {
+        this.inventory.set(slot, resource, amount);
+        this.container.slotsChanged(this);
     }
 }

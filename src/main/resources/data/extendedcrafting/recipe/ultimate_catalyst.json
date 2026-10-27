@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "CIC",
+    " C "
+  ],
+  "key": {
+    "I": "extendedcrafting:black_iron_ingot",
+    "C": "extendedcrafting:ultimate_component"
+  },
+  "result": {
+    "id": "extendedcrafting:ultimate_catalyst"
+  }
+}

@@ -1,35 +1,39 @@
 package com.blakebr0.extendedcrafting.item.loot;
 
-import com.blakebr0.cucumber.helper.NBTHelper;
-import com.blakebr0.extendedcrafting.init.ModLootItemFunctionTypes;
+import com.blakebr0.extendedcrafting.ExtendedCrafting;
+import com.blakebr0.extendedcrafting.api.component.TableRecipeStorageComponent;
+import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
+import com.blakebr0.extendedcrafting.init.ModDataComponentTypes;
 import com.blakebr0.extendedcrafting.tileentity.AutoEnderCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.AutoFluxCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class SaveRecipeStorageItemFunction implements LootItemFunction {
+    public static final MapCodec<SaveRecipeStorageItemFunction> MAP_CODEC = MapCodec.unit(new SaveRecipeStorageItemFunction());
+
     @Override
-    public LootItemFunctionType getType() {
-        return ModLootItemFunctionTypes.AUTO_TABLE.get();
+    public MapCodec<? extends LootItemFunction> codec() {
+        return MAP_CODEC;
     }
 
     @Override
     public ItemStack apply(ItemStack stack, LootContext context) {
-        var tile = context.getParam(LootContextParams.BLOCK_ENTITY);
+        var tile = context.getParameter(LootContextParams.BLOCK_ENTITY);
+        var level = context.getLevel();
 
         if (tile instanceof AutoTableTileEntity table) {
             var storage = table.getRecipeStorage();
 
             if (storage.hasRecipes()) {
-                NBTHelper.setInt(stack, "RecipeCount", storage.getRecipeCount());
-                NBTHelper.setTag(stack, "RecipeStorage", storage.serializeNBT());
+                save(stack, storage, level);
             }
         }
 
@@ -37,8 +41,7 @@ public class SaveRecipeStorageItemFunction implements LootItemFunction {
             var storage = crafter.getRecipeStorage();
 
             if (storage.hasRecipes()) {
-                NBTHelper.setInt(stack, "RecipeCount", storage.getRecipeCount());
-                NBTHelper.setTag(stack, "RecipeStorage", storage.serializeNBT());
+                save(stack, storage, level);
             }
         }
 
@@ -46,21 +49,21 @@ public class SaveRecipeStorageItemFunction implements LootItemFunction {
             var storage = crafter.getRecipeStorage();
 
             if (storage.hasRecipes()) {
-                NBTHelper.setInt(stack, "RecipeCount", storage.getRecipeCount());
-                NBTHelper.setTag(stack, "RecipeStorage", storage.serializeNBT());
+                save(stack, storage, level);
             }
         }
 
         return stack;
     }
 
-    public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<SaveRecipeStorageItemFunction> {
-        @Override
-        public void serialize(JsonObject json, SaveRecipeStorageItemFunction function, JsonSerializationContext context) { }
+    private static void save(ItemStack stack, TableRecipeStorage storage, Level level) {
+        var count = storage.getRecipeCount();
 
-        @Override
-        public SaveRecipeStorageItemFunction deserialize(JsonObject json, JsonDeserializationContext context) {
-            return new SaveRecipeStorageItemFunction();
+        try (var reporter = new ProblemReporter.ScopedCollector(ExtendedCrafting.LOGGER)) {
+            var tag = TagValueOutput.createWithContext(reporter, level.registryAccess());
+
+            storage.serialize(tag);
+            stack.set(ModDataComponentTypes.TABLE_RECIPE_STORAGE, new TableRecipeStorageComponent(count, tag.buildResult()));
         }
     }
 }

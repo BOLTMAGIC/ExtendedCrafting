@@ -1,37 +1,40 @@
 package com.blakebr0.extendedcrafting.block;
 
 import com.blakebr0.cucumber.block.BaseTileEntityBlock;
-import com.blakebr0.cucumber.helper.NBTHelper;
+import com.blakebr0.cucumber.helper.BlockHelper;
+import com.blakebr0.cucumber.iface.IHoverTextProvider;
+import com.blakebr0.extendedcrafting.ExtendedCrafting;
+import com.blakebr0.extendedcrafting.init.ModDataComponentTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.AutoFluxCrafterTileEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkHooks;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-public class AutoFluxCrafterBlock extends BaseTileEntityBlock {
-	public AutoFluxCrafterBlock() {
-		super(SoundType.METAL, 6.0F, 12.0F, true);
+public class AutoFluxCrafterBlock extends BaseTileEntityBlock implements IHoverTextProvider {
+	public AutoFluxCrafterBlock(Identifier id) {
+		super(id, SoundType.METAL, 6.0F, 12.0F, true);
 	}
 
 	@Override
@@ -40,12 +43,12 @@ public class AutoFluxCrafterBlock extends BaseTileEntityBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (!level.isClientSide()) {
 			var tile = level.getBlockEntity(pos);
 
 			if (tile instanceof AutoFluxCrafterTileEntity crafter) {
-				NetworkHooks.openScreen((ServerPlayer) player, crafter, pos);
+				player.openMenu(crafter, pos);
 			}
 		}
 
@@ -53,39 +56,39 @@ public class AutoFluxCrafterBlock extends BaseTileEntityBlock {
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (state.getBlock() != newState.getBlock()) {
-			var tile = level.getBlockEntity(pos);
-
-			if (tile instanceof AutoFluxCrafterTileEntity crafter) {
-				Containers.dropContents(level, pos, crafter.getInventory().getStacks());
-			}
-		}
-
-		super.onRemove(state, level, pos, newState, isMoving);
-	}
-
-	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
-		if (NBTHelper.hasKey(stack, "RecipeStorage")) {
+		var storage = stack.get(ModDataComponentTypes.TABLE_RECIPE_STORAGE);
+		if (storage != null) {
 			var tile = level.getBlockEntity(pos);
 
 			if (tile instanceof AutoFluxCrafterTileEntity crafter) {
-				var storage = stack.getTag().getCompound("RecipeStorage");
+				try (var reporter = new ProblemReporter.ScopedCollector(ExtendedCrafting.LOGGER)) {
+					var tag = TagValueInput.create(reporter, level.registryAccess(), storage.data());
 
-				crafter.getRecipeStorage().deserializeNBT(storage);
+					if (reporter.isEmpty()) {
+						crafter.getRecipeStorage().deserialize(tag);
+					}
+				}
 			}
 		}
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	@Override
-	public void appendHoverText(ItemStack stack, BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
-		var recipes = NBTHelper.getInt(stack, "RecipeCount");
-
-		if (recipes > 0) {
-			tooltip.add(ModTooltips.RECIPE_COUNT.args(recipes).build());
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+		var storage = stack.get(ModDataComponentTypes.TABLE_RECIPE_STORAGE);
+		if (storage != null && storage.recipeCount() > 0) {
+			builder.accept(ModTooltips.RECIPE_COUNT.args(storage.recipeCount()).toComponent());
 		}
+	}
+
+	@Override
+	protected boolean hasAnalogOutputSignal(BlockState state) {
+		return true;
+	}
+
+	@Override
+	protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+		return BlockHelper.getRedstoneSignalFromInventory(level.getBlockEntity(pos));
 	}
 
 	@Override

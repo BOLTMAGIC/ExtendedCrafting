@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": "extendedcrafting:the_ultimate_ingot"
+  },
+  "result": {
+    "id": "extendedcrafting:the_ultimate_block"
+  }
+}

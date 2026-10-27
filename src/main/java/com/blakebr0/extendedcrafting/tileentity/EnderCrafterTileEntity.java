@@ -1,45 +1,53 @@
 package com.blakebr0.extendedcrafting.tileentity;
 
-import com.blakebr0.cucumber.helper.StackHelper;
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.helper.ItemResourceHelper;
+import com.blakebr0.cucumber.inventory.CItemStacksHandler;
 import com.blakebr0.cucumber.inventory.CachedRecipe;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
-import com.blakebr0.cucumber.util.Localizable;
+import com.blakebr0.cucumber.util.ContainerDataBuilder;
 import com.blakebr0.extendedcrafting.api.crafting.IEnderCrafterRecipe;
 import com.blakebr0.extendedcrafting.block.EnderAlternatorBlock;
+import com.blakebr0.extendedcrafting.client.handler.ClientRecipeHandler;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.container.EnderCrafterContainer;
-import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import com.blakebr0.extendedcrafting.util.AlternatorParticleOffsets;
-import com.blakebr0.extendedcrafting.util.EmptyContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EnderCrafterTileEntity extends BaseInventoryTileEntity implements MenuProvider {
-	private final BaseItemStackHandler inventory;
-	private final CachedRecipe<IEnderCrafterRecipe> recipe;
+	private final CItemStacksHandler inventory;
+	private final CachedRecipe<CraftingInput, IEnderCrafterRecipe> recipe;
 	private int progress;
 	private int progressReq;
+	private @Nullable Identifier recipeId;
 	protected boolean isGridChanged = true;
+
+	private final ContainerData dataAccess;
 
 	public EnderCrafterTileEntity(BlockPos pos, BlockState state) {
 		this(ModTileEntities.ENDER_CRAFTER.get(), pos, state);
@@ -47,37 +55,44 @@ public class EnderCrafterTileEntity extends BaseInventoryTileEntity implements M
 
 	public EnderCrafterTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
-		this.inventory = createInventoryHandler(this::onContentsChanged);
+		this.inventory = createInventoryHandler((_, _) -> this.onContentsChanged());
 		this.recipe = new CachedRecipe<>(ModRecipeTypes.ENDER_CRAFTER.get());
+
+		this.dataAccess = ContainerDataBuilder.builder()
+				.sync(() -> this.progress, value -> this.progress = value)
+				.sync(() -> this.progressReq, value -> this.progressReq = value)
+				.build();
 	}
 
     @Override
-	public BaseItemStackHandler getInventory() {
+	public CItemStacksHandler getInventory() {
 		return this.inventory;
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
-		this.progress = tag.getInt("Progress");
-		this.progressReq = tag.getInt("ProgressReq");
+	public void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
+		this.progress = input.getIntOr("progress", 0);
+		this.progressReq = input.getIntOr("progress_required", 0);
+		this.recipeId = input.read("recipe_id", Identifier.CODEC).orElse(null);
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
-		tag.putInt("Progress", this.progress);
-		tag.putInt("ProgressReq", this.progressReq);
+	public void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		output.putInt("progress", this.progress);
+		output.putInt("progress_required", this.progressReq);
+		output.storeNullable("recipe_id", Identifier.CODEC, this.recipeId);
 	}
 
 	@Override
 	public Component getDisplayName() {
-		return Localizable.of("container.extendedcrafting.ender_crafter").build();
+		return Component.translatable("container.extendedcrafting.ender_crafter");
 	}
 
 	@Override
 	public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player player) {
-		return EnderCrafterContainer.create(windowId, playerInventory, this.inventory, this.getBlockPos());
+		return new EnderCrafterContainer(windowId, playerInventory, this.inventory, this.dataAccess, this.getBlockPos());
 	}
 
 	public static void tick(Level level, BlockPos pos, BlockState state, EnderCrafterTileEntity tile) {
@@ -85,10 +100,9 @@ public class EnderCrafterTileEntity extends BaseInventoryTileEntity implements M
 		var selectedRecipe = tile.getSelectedRecipeGrid();
 
 		if (recipe != null && (selectedRecipe == null || recipe.matches(selectedRecipe, level))) {
-			var result = recipe.assemble(tile.inventory.toRecipeInventory(0, 9), level.registryAccess());
-			var output = tile.inventory.getStackInSlot(9);
+			var result = recipe.assemble(tile.toCraftingInput());
 
-			if (StackHelper.canCombineStacks(result, output)) {
+			if (ItemResourceHelper.canCombine(tile.inventory, 9, result)) {
 				var alternators = tile.getAlternatorPositions();
 				int alternatorCount = alternators.size();
 
@@ -105,12 +119,19 @@ public class EnderCrafterTileEntity extends BaseInventoryTileEntity implements M
 					}
 
 					if (tile.progress >= tile.progressReq) {
-						for (int i = 0; i < tile.inventory.getSlots() - 1; i++) {
-							tile.inventory.setStackInSlot(i, StackHelper.shrink(tile.inventory.getStackInSlot(i), 1, false));
-						}
+						try (var tx = Transaction.openRoot()) {
+							for (int i = 0; i < tile.inventory.size() - 1; i++) {
+								var resource = tile.inventory.getResource(i);
+								if (!resource.isEmpty()) {
+									tile.inventory.extract(i, resource, 1, tx, true);
+								}
+							}
 
-						tile.updateResult(result);
-						tile.progress = 0;
+							tile.inventory.insert(9, ItemResource.of(result), result.count(), tx, true);
+							tile.progress = 0;
+
+							tx.commit();
+						}
 					}
 
 					tile.setChangedFast();
@@ -135,36 +156,28 @@ public class EnderCrafterTileEntity extends BaseInventoryTileEntity implements M
 		tile.dispatchIfChanged();
 	}
 
-	public static BaseItemStackHandler createInventoryHandler() {
+	public static CItemStacksHandler createInventoryHandler() {
 		return createInventoryHandler(null);
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
-		return BaseItemStackHandler.create(10, onContentsChanged, builder -> {
+	public static CItemStacksHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
+		return CItemStacksHandler.create(10, onContentsChanged, builder -> {
 			builder.setOutputSlots(9);
-			builder.setCanInsert((slot, stack) -> false);
+			builder.setCanInsert((_, _) -> false);
 		});
-	}
-
-	private void updateResult(ItemStack stack) {
-		var result = this.inventory.getStackInSlot(9);
-
-		if (result.isEmpty()) {
-			this.inventory.setStackInSlot(9, stack);
-		} else {
-			this.inventory.setStackInSlot(9, StackHelper.grow(result, stack.getCount()));
-		}
 	}
 
 	private List<BlockPos> getAlternatorPositions() {
 		List<BlockPos> alternators = new ArrayList<>();
-		var level = this.getLevel();
 
-		if (level != null) {
+		if (this.level != null) {
 			var pos = this.getBlockPos();
 
 			BlockPos.betweenClosedStream(pos.offset(-3, -3, -3), pos.offset(3, 3, 3)).forEach(aoePos -> {
-				var block = level.getBlockState(aoePos).getBlock();
+				if (!this.level.isLoaded(aoePos))
+					return;
+
+				var block = this.level.getBlockState(aoePos).getBlock();
 				if (block instanceof EnderAlternatorBlock)
 					alternators.add(aoePos.immutable());
 			});
@@ -196,8 +209,10 @@ public class EnderCrafterTileEntity extends BaseInventoryTileEntity implements M
 	}
 
 	private void onContentsChanged() {
-		this.isGridChanged = true;
-		this.setChangedFast();
+		if (!this.isGridChanged) {
+			this.isGridChanged = true;
+			this.setChanged();
+		}
 	}
 
 	public int getProgress() {
@@ -213,26 +228,38 @@ public class EnderCrafterTileEntity extends BaseInventoryTileEntity implements M
 		return null;
 	}
 
-	private CraftingContainer getSelectedRecipeGrid() {
+	private CraftingInput getSelectedRecipeGrid() {
 		var storage = this.getRecipeStorage();
 		if (storage != null) {
 			var grid = storage.getSelectedRecipeGrid();
 			if (grid != null) {
-				return new ExtendedCraftingInventory(EmptyContainer.INSTANCE, storage.getSelectedRecipeGrid(), 3);
+				return grid.toCraftingInput(3, 3);
 			}
 		}
 
 		return null;
 	}
 
-	public IEnderCrafterRecipe getActiveRecipe() {
-		if (this.level == null)
-			return null;
+	public @Nullable IEnderCrafterRecipe getActiveRecipe() {
+		if (this.isGridChanged) {
+			this.isGridChanged = false;
 
-		if (!this.isGridChanged) {
-			return this.recipe.get();
+			this.recipe.check(this.toCraftingInput(), (ServerLevel) this.level);
+
+			if (this.recipeId != this.recipe.id()) {
+				this.recipeId = this.recipe.id();
+				this.setChangedFast();
+			}
 		}
 
-		return this.recipe.checkAndGet(this.inventory.toRecipeInventory(0, 9), this.level);
+		return this.recipe.get();
+	}
+
+	public @Nullable IEnderCrafterRecipe getActiveClientRecipe() {
+		return ClientRecipeHandler.ENDER_CRAFTER_RECIPE_MAP.get(this.recipeId);
+	}
+
+	private CraftingInput toCraftingInput() {
+		return this.inventory.toCraftingInput(3, 3, 0, 9);
 	}
 }

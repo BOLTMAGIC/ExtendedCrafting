@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "#c:storage_blocks/black_iron",
+    "#c:storage_blocks/crystaltine",
+    "#c:storage_blocks/ender_ingot",
+    "#c:storage_blocks/ender_star",
+    "#c:storage_blocks/enhanced_ender_ingot",
+    "#c:storage_blocks/enhanced_redstone_ingot",
+    "#c:storage_blocks/flux_star",
+    "#c:storage_blocks/luminessence",
+    "#c:storage_blocks/nether_star",
+    "#c:storage_blocks/redstone_ingot",
+    "#c:storage_blocks/the_ultimate"
+  ]
+}

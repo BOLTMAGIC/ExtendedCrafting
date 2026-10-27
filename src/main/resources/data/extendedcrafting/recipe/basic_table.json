@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:tables"
+    }
+  ],
+  "pattern": [
+    "BAB",
+    "CIC",
+    "BSB"
+  ],
+  "key": {
+    "I": "#c:storage_blocks/iron",
+    "C": "minecraft:crafting_table",
+    "B": "extendedcrafting:basic_component",
+    "S": "extendedcrafting:black_iron_slate",
+    "A": "extendedcrafting:basic_catalyst"
+  },
+  "result": {
+    "id": "extendedcrafting:basic_table"
+  }
+}

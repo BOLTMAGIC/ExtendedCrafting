@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#c:dusts/glowstone",
+    "#c:dusts/glowstone",
+    "#c:dusts/redstone",
+    "minecraft:gunpowder"
+  ],
+  "result": {
+    "id": "extendedcrafting:luminessence",
+    "count": 2
+  }
+}

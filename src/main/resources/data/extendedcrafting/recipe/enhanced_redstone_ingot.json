@@ -1,0 +1,17 @@
+{
+  "type": "extendedcrafting:shaped_flux_crafter",
+  "power_required": 800000,
+  "pattern": [
+    " E ",
+    "ESE",
+    " E "
+  ],
+  "key": {
+    "S": "extendedcrafting:flux_star",
+    "E": "extendedcrafting:redstone_ingot"
+  },
+  "result": {
+    "id": "extendedcrafting:enhanced_redstone_ingot",
+    "count": 4
+  }
+}

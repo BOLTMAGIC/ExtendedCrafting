@@ -1,7 +1,7 @@
 package com.blakebr0.extendedcrafting.compat.jei.category.table;
 
-import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.compat.jei.JeiCompat;
 import com.blakebr0.extendedcrafting.crafting.recipe.ShapedTableRecipe;
@@ -10,51 +10,54 @@ import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.api.recipe.types.IRecipeHolderType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
-import java.util.List;
-
-public class EpicTableCategory implements IRecipeCategory<ITableRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/epic_crafting.png");
-	public static final RecipeType<ITableRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "epic_crafting", ITableRecipe.class);
+public class EpicTableCategory implements IRecipeCategory<RecipeHolder<ITableRecipe>> {
+	private static final Identifier TEXTURE = ExtendedCrafting.resource("textures/jei/epic_crafting.png");
+	public static final IRecipeHolderType<ITableRecipe> RECIPE_TYPE = IRecipeHolderType.create(ExtendedCrafting.resource("epic_crafting"));
 
     private final IDrawable background;
     private final IDrawable icon;
-	private final IDrawable shapeless;
     private final IDrawable required;
 
     public EpicTableCategory(IGuiHelper helper) {
         this.background = helper.createDrawable(TEXTURE, 0, 0, 198, 231);
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.EPIC_TABLE.get()));
-		this.shapeless = helper.createDrawable(JeiCompat.ICONS, 17, 0, 15, 15);
 		this.required = helper.createDrawable(JeiCompat.ICONS, 0, 0, 15, 15);
     }
 
 	@Override
-	public RecipeType<ITableRecipe> getRecipeType() {
+	public IRecipeType<RecipeHolder<ITableRecipe>> getRecipeType() {
 		return RECIPE_TYPE;
 	}
 
 	@Override
 	public Component getTitle() {
-		return Localizable.of("jei.category.extendedcrafting.epic_crafting").build();
+		return Component.translatable("jei.category.extendedcrafting.epic_crafting");
 	}
 
 	@Override
-	public IDrawable getBackground(){
-		return this.background;
+	public int getWidth() {
+		return this.background.getWidth();
+	}
+
+	@Override
+	public int getHeight() {
+		return this.background.getHeight();
 	}
 
 	@Override
@@ -63,49 +66,41 @@ public class EpicTableCategory implements IRecipeCategory<ITableRecipe> {
 	}
 
 	@Override
-	public void draw(ITableRecipe recipe, IRecipeSlotsView slots, GuiGraphics gfx, double mouseX, double mouseY) {
+	public void draw(RecipeHolder<ITableRecipe> recipeHolder, IRecipeSlotsView slots, GuiGraphicsExtractor gfx, double mouseX, double mouseY) {
+		this.background.draw(gfx);
+
+        var recipe = recipeHolder.value();
 		var matrix = gfx.pose();
 
-		matrix.pushPose();
-		matrix.scale(0.5F, 0.5F, 0.5F);
+		matrix.pushMatrix();
+		matrix.scale(0.5F, 0.5F);
 
 		var shapeless = recipe instanceof ShapelessTableRecipe;
-
-		if (shapeless) this.shapeless.draw(gfx, 324, 365);
 
 		if (recipe.hasRequiredTier())
-			this.required.draw(gfx, shapeless ? 304 : 324, 365);
+			this.required.draw(gfx, shapeless ? 358 : 378, 401);
 
-		matrix.popPose();
-	}
-
-	@SuppressWarnings("removal")
-    @Override
-	public List<Component> getTooltipStrings(ITableRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
-		var shapeless = recipe instanceof ShapelessTableRecipe;
-		int sX = (shapeless ? 304 : 324) / 2, sY = 365 / 2;
-		int sX2 = 324 / 2;
-
-		if (shapeless && mouseX > sX2 - 1 && mouseX < sX2 + 8 && mouseY > sY - 1 && mouseY < sY + 8) {
-			return List.of(ModTooltips.SHAPELESS.color(ChatFormatting.WHITE).build());
-		}
-		if (recipe.hasRequiredTier() && mouseX > sX - 1 && mouseX < sX + 8 && mouseY > sY - 1 && mouseY < sY + 8) {
-			return List.of(ModTooltips.REQUIRES_TABLE.args(recipe.getTier()).color(ChatFormatting.WHITE).build());
-		}
-
-		return List.of();
+		matrix.popMatrix();
 	}
 
 	@Override
-	public void setRecipe(IRecipeLayoutBuilder builder, ITableRecipe recipe, IFocusGroup focuses) {
-		var level = Minecraft.getInstance().level;
+	public void getTooltip(ITooltipBuilder tooltip, RecipeHolder<ITableRecipe> recipeHolder, IRecipeSlotsView slots, double mouseX, double mouseY) {
+        var recipe = recipeHolder.value();
+		var shapeless = recipe instanceof ShapelessTableRecipe;
+		int sX = (shapeless ? 358 : 378) / 2, sY = 401 / 2;
 
-		assert level != null;
+		if (recipe.hasRequiredTier() && mouseX > sX - 1 && mouseX < sX + 8 && mouseY > sY - 1 && mouseY < sY + 8) {
+			tooltip.add(ModTooltips.REQUIRES_TABLE.args(recipe.getTier()).color(ChatFormatting.WHITE).toComponent());
+		}
+	}
 
-		var inputs = recipe.getIngredients();
-		var output = recipe.getResultItem(level.registryAccess());
+	@Override
+	public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<ITableRecipe> recipeHolder, IFocusGroup focuses) {
+        var recipe = recipeHolder.value();
+		var output = recipe.assemble(TableCraftingInput.empty(recipe.getTier()));
 
 		if (recipe instanceof ShapedTableRecipe shaped) {
+			var inputs = recipe.getPositionedIngredients();
 			int heightOffset = Math.floorDiv(11 - shaped.getHeight(), 2);
 			int widthOffset = Math.floorDiv(11 - shaped.getWidth(), 2);
 			int stackIndex = 0;
@@ -115,17 +110,18 @@ public class EpicTableCategory implements IRecipeCategory<ITableRecipe> {
 					var slot = builder.addSlot(RecipeIngredientRole.INPUT, j * 18 + 1, i * 18 + 1);
 
 					if (i >= heightOffset && i < shaped.getHeight() + heightOffset && j >= widthOffset && j < shaped.getWidth() + widthOffset) {
-						slot.addIngredients(inputs.get(stackIndex++));
+						inputs.get(stackIndex++).ifPresent(slot::add);
 					}
 				}
 			}
 		} else if (recipe instanceof ShapelessTableRecipe) {
+			var inputs = recipe.getIngredients();
 			for (int i = 0; i < 11; i++) {
 				for (int j = 0; j < 11; j++) {
 					int index = j + (i * 11);
 
 					if (index < inputs.size()) {
-						builder.addSlot(RecipeIngredientRole.INPUT, j * 18 + 1, i * 18 + 1).addIngredients(inputs.get(index));
+						builder.addSlot(RecipeIngredientRole.INPUT, j * 18 + 1, i * 18 + 1).add(inputs.get(index));
 					}
 				}
 			}
@@ -133,7 +129,7 @@ public class EpicTableCategory implements IRecipeCategory<ITableRecipe> {
 			builder.setShapeless(188, 200);
 		}
 
-		builder.addSlot(RecipeIngredientRole.OUTPUT, 103, 210).addItemStack(output);
+		builder.addSlot(RecipeIngredientRole.OUTPUT, 103, 210).add(output);
 
 		builder.moveRecipeTransferButton(179, 218);
 	}

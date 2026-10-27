@@ -1,7 +1,6 @@
 package com.blakebr0.extendedcrafting.compat.jei.category;
 
 import com.blakebr0.cucumber.util.Formatting;
-import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.api.crafting.IFluxCrafterRecipe;
 import com.blakebr0.extendedcrafting.crafting.recipe.ShapedFluxCrafterRecipe;
@@ -10,24 +9,26 @@ import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.api.recipe.types.IRecipeHolderType;
+import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
-import java.util.List;
-
-public class FluxCraftingCategory implements IRecipeCategory<IFluxCrafterRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/flux_crafting.png");
-	public static final RecipeType<IFluxCrafterRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "flux_crafting", IFluxCrafterRecipe.class);
+public class FluxCraftingCategory implements IRecipeCategory<RecipeHolder<IFluxCrafterRecipe>> {
+	private static final Identifier TEXTURE = ExtendedCrafting.resource("textures/jei/flux_crafting.png");
+	public static final IRecipeHolderType<IFluxCrafterRecipe> RECIPE_TYPE = IRecipeHolderType.create(ExtendedCrafting.resource("flux_crafting"));
 
 	private final IDrawable background;
 	private final IDrawable icon;
@@ -38,18 +39,23 @@ public class FluxCraftingCategory implements IRecipeCategory<IFluxCrafterRecipe>
 	}
 
 	@Override
-	public RecipeType<IFluxCrafterRecipe> getRecipeType() {
+	public IRecipeType<RecipeHolder<IFluxCrafterRecipe>> getRecipeType() {
 		return RECIPE_TYPE;
 	}
 
 	@Override
 	public Component getTitle() {
-		return Localizable.of("jei.category.extendedcrafting.flux_crafting").build();
+		return Component.translatable("jei.category.extendedcrafting.flux_crafting");
 	}
 
 	@Override
-	public IDrawable getBackground() {
-		return this.background;
+	public int getWidth() {
+		return this.background.getWidth();
+	}
+
+	@Override
+	public int getHeight() {
+		return this.background.getHeight();
 	}
 
 	@Override
@@ -58,27 +64,27 @@ public class FluxCraftingCategory implements IRecipeCategory<IFluxCrafterRecipe>
 	}
 
 	@Override
-	public List<Component> getTooltipStrings(IFluxCrafterRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
-		if (mouseX > 1 && mouseX < 14 && mouseY > 1 && mouseY < 78) {
-			return List.of(
-					Formatting.energy(recipe.getPowerRequired()),
-					ModTooltips.PER_ALTERNATOR.args(Formatting.energyPerTick(recipe.getPowerRate())).color(ChatFormatting.WHITE).build()
-			);
-		}
-
-		return List.of();
+	public void draw(RecipeHolder<IFluxCrafterRecipe> recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor gfx, double mouseX, double mouseY) {
+		this.background.draw(gfx);
 	}
 
 	@Override
-	public void setRecipe(IRecipeLayoutBuilder builder, IFluxCrafterRecipe recipe, IFocusGroup focuses) {
-		var level = Minecraft.getInstance().level;
+	public void getTooltip(ITooltipBuilder tooltip, RecipeHolder<IFluxCrafterRecipe> recipeHolder, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        var recipe = recipeHolder.value();
 
-		assert level != null;
+		if (mouseX > 1 && mouseX < 14 && mouseY > 1 && mouseY < 78) {
+			tooltip.add(Formatting.energy(recipe.getPowerRequired()));
+			tooltip.add(ModTooltips.PER_ALTERNATOR.args(Formatting.energyPerTick(recipe.getPowerRate())).color(ChatFormatting.WHITE).toComponent());
+		}
+	}
 
-		var inputs = recipe.getIngredients();
-		var output = recipe.getResultItem(level.registryAccess());
+	@Override
+	public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<IFluxCrafterRecipe> recipeHolder, IFocusGroup focuses) {
+        var recipe = recipeHolder.value();
+		var output = recipe.assemble(CraftingInput.EMPTY);
 
 		if (recipe instanceof ShapedFluxCrafterRecipe shaped) {
+			var inputs = recipe.getPositionedIngredients();
 			int stackIndex = 0;
 
 			for (int i = 0; i < 3; i++) {
@@ -86,17 +92,18 @@ public class FluxCraftingCategory implements IRecipeCategory<IFluxCrafterRecipe>
 					var slot = builder.addSlot(RecipeIngredientRole.INPUT, j * 18 + 26, i * 18 + 13);
 
 					if (i < shaped.getHeight() && j < shaped.getWidth()) {
-						slot.addIngredients(inputs.get(stackIndex++));
+						inputs.get(stackIndex++).ifPresent(slot::add);
 					}
 				}
 			}
 		} else if (recipe instanceof ShapelessFluxCrafterRecipe) {
+			var inputs = recipe.getIngredients();
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					int index = j + (i * 3);
 
 					if (index < inputs.size()) {
-						builder.addSlot(RecipeIngredientRole.INPUT, j * 18 + 26, i * 18 + 13).addIngredients(inputs.get(index));
+						builder.addSlot(RecipeIngredientRole.INPUT, j * 18 + 26, i * 18 + 13).add(inputs.get(index));
 					}
 				}
 			}
@@ -104,7 +111,7 @@ public class FluxCraftingCategory implements IRecipeCategory<IFluxCrafterRecipe>
 			builder.setShapeless();
 		}
 
-		builder.addSlot(RecipeIngredientRole.OUTPUT, 120, 31).addItemStack(output);
+		builder.addSlot(RecipeIngredientRole.OUTPUT, 120, 31).add(output);
 
 		builder.moveRecipeTransferButton(134, 63);
 	}

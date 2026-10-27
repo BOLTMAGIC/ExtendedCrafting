@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "extendedcrafting:black_iron_slate",
+    "extendedcrafting:luminessence",
+    "#c:ingots/iron",
+    "#c:ingots/iron"
+  ],
+  "result": {
+    "id": "extendedcrafting:basic_component"
+  }
+}

@@ -5,10 +5,11 @@ import com.blakebr0.cucumber.util.VoxelShapeBuilder;
 import com.blakebr0.extendedcrafting.tileentity.FluxAlternatorTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -20,11 +21,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
 
 public class FluxAlternatorBlock extends BaseTileEntityBlock {
 	private static final VoxelShape SHAPE_DOWN = VoxelShapeBuilder.builder().cuboid(0, 10, 0, 16, 16, 16).cuboid(4, 0, 4, 12, 10, 12).build();
@@ -34,10 +34,10 @@ public class FluxAlternatorBlock extends BaseTileEntityBlock {
 	private static final VoxelShape SHAPE_EAST = VoxelShapeBuilder.builder().cuboid(10, 0, 0, 16, 16, 16).cuboid(0, 4, 4, 16, 12, 12).build();
 	private static final VoxelShape SHAPE_WEST = VoxelShapeBuilder.builder().cuboid(0, 0, 0, 6, 16, 16).cuboid(6, 4, 4, 16, 12, 12).build();
 
-	public static final DirectionProperty FACING = BlockStateProperties.FACING;
+	public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
-	public FluxAlternatorBlock() {
-		super(SoundType.METAL, 5.0F, 10.0F, true);
+	public FluxAlternatorBlock(Identifier id) {
+		super(id, SoundType.METAL, 5.0F, 10.0F, true);
 		this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.UP));
 	}
 
@@ -47,12 +47,12 @@ public class FluxAlternatorBlock extends BaseTileEntityBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (!level.isClientSide()) {
 			var tile = level.getBlockEntity(pos);
 
 			if (tile instanceof FluxAlternatorTileEntity alternator) {
-				NetworkHooks.openScreen((ServerPlayer) player, alternator, pos);
+				player.openMenu(alternator, pos);
 			}
 		}
 

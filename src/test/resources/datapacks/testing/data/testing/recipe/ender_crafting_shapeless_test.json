@@ -1,0 +1,10 @@
+{
+  "type": "extendedcrafting:shapeless_ender_crafter",
+  "ingredients": [
+    "minecraft:coal",
+    "minecraft:coal"
+  ],
+  "result": {
+    "id": "minecraft:apple"
+  }
+}

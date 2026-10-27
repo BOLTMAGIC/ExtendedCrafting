@@ -5,14 +5,17 @@ import com.blakebr0.cucumber.client.screen.widget.EnergyBarWidget;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.container.CraftingCoreContainer;
 import com.blakebr0.extendedcrafting.tileentity.CraftingCoreTileEntity;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 
 public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContainer> {
-	private static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/crafting_core.png");
+	private static final Identifier BACKGROUND = ExtendedCrafting.resource("textures/gui/crafting_core.png");
+
 	private CraftingCoreTileEntity tile;
 
 	public CraftingCoreScreen(CraftingCoreContainer container, Inventory inventory, Component title) {
@@ -22,80 +25,81 @@ public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContaine
 	@Override
 	protected void init() {
 		super.init();
-		int x = this.getGuiLeft();
-		int y = this.getGuiTop();
+		int x = this.getLeftPos();
+		int y = this.getTopPos();
 
 		this.tile = this.getTileEntity();
 
-		if (this.tile != null) {
-			this.addRenderableWidget(new EnergyBarWidget(x + 7, y + 17, tile.getEnergy()));
-		}
+		this.addRenderableWidget(new EnergyBarWidget(x + 7, y + 17, this.menu::getEnergyStored, this.menu::getMaxEnergyCapacity));
 	}
 
 	@Override
-	public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTicks) {
-		int x = this.getGuiLeft();
-		int y = this.getGuiTop();
+	protected void extractLabels(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
+		gfx.text(this.font, this.title, (this.imageWidth / 2 - this.font.width(title) / 2), 6, -12566464, false);
+		gfx.text(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, -12566464, false);
 
-		super.render(gfx, mouseX, mouseY, partialTicks);
+		var matrix = gfx.pose();
+
+		matrix.pushMatrix();
+		matrix.scale(0.75F, 0.75F);
+
+		gfx.text(this.font, text("screen.extendedcrafting.crafting_core.pedestals", this.menu.getPedestalCount()), 36, 36, -1);
+
+		var hasRecipe = !this.getRecipeOutput().isEmpty();
+		if (!hasRecipe) {
+			gfx.text(this.font, text("screen.extendedcrafting.crafting_core.no_recipe"), 36, 56, -1);
+		} else {
+			gfx.text(this.font, text("screen.extendedcrafting.crafting_core.power_cost", number(this.menu.getEnergyRequired())) + " FE", 36, 56, -1);
+			gfx.text(this.font, text("screen.extendedcrafting.crafting_core.power_rate", number(this.menu.getEnergyRate())) + " FE/t", 36, 66, -1);
+
+			if (this.menu.getEnergyStored() < this.menu.getEnergyRate()) {
+				gfx.text(this.font, text("screen.extendedcrafting.crafting_core.no_power"), 36, 86, -1);
+			}
+		}
+
+		matrix.popMatrix();
+	}
+
+	@Override
+	protected void extractTooltip(GuiGraphicsExtractor gfx, int mouseX, int mouseY) {
+		int x = this.getLeftPos();
+		int y = this.getTopPos();
+
+		super.extractTooltip(gfx, mouseX, mouseY);
 
 		var isHoldingItem = !this.menu.getCarried().isEmpty() || this.isDragging();
 
 		if (!isHoldingItem && isHoveringSlot(x + 148, y + 47, mouseX, mouseY)) {
 			var output = this.getRecipeOutput();
-
-			gfx.renderTooltip(this.font, output, mouseX, mouseY);
+			if (!output.isEmpty()) {
+				gfx.setTooltipForNextFrame(this.font, output, mouseX, mouseY);
+			}
 		}
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
-		var title = this.getTitle().getString();
+	public void extractBackground(GuiGraphicsExtractor gfx, int mouseX, int mouseY, float a) {
+		super.extractBackground(gfx, mouseX, mouseY, a);
 
-		gfx.drawString(this.font, title, (this.imageWidth / 2 - this.font.width(title) / 2), 6, 4210752, false);
-		gfx.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, 4210752, false);
+		int x = this.getLeftPos();
+		int y = this.getTopPos();
 
-		var matrix = gfx.pose();
-
-		matrix.pushPose();
-		matrix.scale(0.75F, 0.75F, 0.75F);
-
-		gfx.drawString(this.font, text("screen.extendedcrafting.crafting_core.pedestals", this.getPedestalCount()), 36, 36, -1);
-
-		if (!this.hasRecipe()) {
-			gfx.drawString(this.font, text("screen.extendedcrafting.crafting_core.no_recipe"), 36, 56, -1);
-		} else {
-			gfx.drawString(this.font, text("screen.extendedcrafting.crafting_core.power_cost", number(this.getEnergyRequired())) + " FE", 36, 56, -1);
-			gfx.drawString(this.font, text("screen.extendedcrafting.crafting_core.power_rate", number(this.getEnergyRate())) + " FE/t", 36, 66, -1);
-
-			if (this.getEnergyStored() < this.getEnergyRate()) {
-				gfx.drawString(this.font, text("screen.extendedcrafting.crafting_core.no_power"), 36, 86, -1);
-			}
+		if (this.menu.getProgress() > 0 && this.menu.getEnergyRate() > 0) {
+			int i2 = this.getProgressBarScaled();
+			gfx.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x + 116, y + 47, 194, 0, i2 + 1, 16, 256, 256);
 		}
 
-		matrix.popPose();
-	}
+		var output = this.getRecipeOutput();
 
-	@Override
-	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		super.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
+		if (isHoveringSlot(x + 148, y + 47, mouseX, mouseY)) {
+			extractSlotHighlightBack(gfx, x + 144, y + 43);
+		}
 
-		int x = this.getGuiLeft();
-		int y = this.getGuiTop();
+		gfx.fakeItem(output, x + 148, y + 47);
+		gfx.itemDecorations(this.font, output, x + 148, y + 47);
 
-		if (this.hasRecipe()) {
-			if (this.getProgress() > 0 && this.getEnergyRate() > 0) {
-				int i2 = this.getProgressBarScaled();
-				gfx.blit(BACKGROUND, x + 116, y + 47, 194, 0, i2 + 1, 16);
-			}
-
-			var output = this.getRecipeOutput();
-
-			gfx.renderItem(output, x + 148, y + 47);
-
-			if (isHoveringSlot(x + 148, y + 47, mouseX, mouseY)) {
-				renderSlotHighlight(gfx, x + 148, y + 47, 100);
-			}
+		if (isHoveringSlot(x + 148, y + 47, mouseX, mouseY)) {
+			extractSlotHighlightFront(gfx, x + 144, y + 43);
 		}
 	}
 
@@ -112,13 +116,6 @@ public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContaine
 		return null;
 	}
 
-	private boolean hasRecipe() {
-		if (this.tile == null)
-			return false;
-
-		return this.tile.hasRecipe();
-	}
-
 	private ItemStack getRecipeOutput() {
 		if (this.tile == null)
 			return ItemStack.EMPTY;
@@ -127,64 +124,18 @@ public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContaine
 		if (level == null)
 			return ItemStack.EMPTY;
 
-		var recipe = this.tile.getActiveRecipe();
+		var recipe = this.tile.getActiveClientRecipe();
 
 		if (recipe != null) {
-			return recipe.getResultItem(level.registryAccess());
+			return recipe.assemble(CraftingInput.EMPTY);
 		}
 
 		return ItemStack.EMPTY;
 	}
 
-	private int getEnergyStored() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getEnergy().getEnergyStored();
-	}
-
-	private int getMaxEnergyStored() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getEnergy().getMaxEnergyStored();
-	}
-
-	private int getEnergyRequired() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getEnergyRequired();
-	}
-
-	private int getEnergyRate() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getEnergyRate();
-	}
-
-	private int getProgress() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getProgress();
-	}
-
-	private int getPedestalCount() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getPedestalCount();
-	}
-
 	private int getProgressBarScaled() {
-		int i = this.getProgress();
-		long j = this.getEnergyRequired();
+		int i = this.menu.getProgress();
+		long j = this.menu.getEnergyRequired();
 		return (int) (j != 0 && i != 0 ? (long) i * 24 / j : 0);
-	}
-
-	private static boolean isHoveringSlot(int x, int y, int mouseX, int mouseY) {
-		return mouseX > x - 1 && mouseX < x + 16 && mouseY > y - 1 && mouseY < y + 16;
 	}
 }

@@ -1,13 +1,31 @@
 package com.blakebr0.extendedcrafting.compat;
 
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
-import com.blakebr0.extendedcrafting.block.*;
+import com.blakebr0.extendedcrafting.block.AdvancedAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.AdvancedTableBlock;
+import com.blakebr0.extendedcrafting.block.AutoEnderCrafterBlock;
+import com.blakebr0.extendedcrafting.block.AutoFluxCrafterBlock;
+import com.blakebr0.extendedcrafting.block.BasicAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.BasicTableBlock;
+import com.blakebr0.extendedcrafting.block.CompressorBlock;
+import com.blakebr0.extendedcrafting.block.CraftingCoreBlock;
+import com.blakebr0.extendedcrafting.block.EliteAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.EliteTableBlock;
+import com.blakebr0.extendedcrafting.block.EnderCrafterBlock;
+import com.blakebr0.extendedcrafting.block.EpicAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.EpicTableBlock;
+import com.blakebr0.extendedcrafting.block.FluxCrafterBlock;
+import com.blakebr0.extendedcrafting.block.LegendaryAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.LegendaryTableBlock;
+import com.blakebr0.extendedcrafting.block.UltimateAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.UltimateTableBlock;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.CompressorTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.CraftingCoreTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.EnderCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.FluxCrafterTileEntity;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.CraftingInput;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
@@ -18,43 +36,42 @@ import snownee.jade.api.config.IPluginConfig;
 
 @WailaPlugin
 public class JadeCompat implements IWailaPlugin {
-    private static final ResourceLocation CRAFTING_CORE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID + ":crafting_core");
-	private static final ResourceLocation BASIC_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "basic_table");
-	private static final ResourceLocation ADVANCED_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "advanced_table");
-	private static final ResourceLocation ELITE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_table");
-	private static final ResourceLocation ULTIMATE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ultimate_table");
-	private static final ResourceLocation EPIC_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "epic_table");
-    private static final ResourceLocation LEGENDARY_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "legendary_table");
-	private static final ResourceLocation BASIC_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "basic_auto_table");
-	private static final ResourceLocation ADVANCED_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "advanced_auto_table");
-	private static final ResourceLocation ELITE_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_auto_table");
-	private static final ResourceLocation ULTIMATE_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ultimate_auto_table");
-	private static final ResourceLocation EPIC_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "epic_auto_table");
-    private static final ResourceLocation LEGENDARY_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "legendary_auto_table");
-	private static final ResourceLocation ENDER_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ender_crafter");
-	private static final ResourceLocation AUTO_ENDER_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "auto_ender_crafter");
-	private static final ResourceLocation FLUX_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "flux_crafter");
-	private static final ResourceLocation COMPRESSOR_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "compressor");
-
+	private static final Identifier CRAFTING_CORE_PROVIDER = ExtendedCrafting.resource("crafting_core");
+	private static final Identifier BASIC_TABLE_PROVIDER = ExtendedCrafting.resource("basic_table");
+	private static final Identifier ADVANCED_TABLE_PROVIDER = ExtendedCrafting.resource("advanced_table");
+	private static final Identifier ELITE_TABLE_PROVIDER = ExtendedCrafting.resource("elite_table");
+	private static final Identifier ULTIMATE_TABLE_PROVIDER = ExtendedCrafting.resource("ultimate_table");
+	private static final Identifier EPIC_TABLE_PROVIDER = ExtendedCrafting.resource("epic_table");
+	private static final Identifier LEGENDARY_TABLE_PROVIDER = ExtendedCrafting.resource("legendary_table");
+	private static final Identifier BASIC_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("basic_auto_table");
+	private static final Identifier ADVANCED_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("advanced_auto_table");
+	private static final Identifier ELITE_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("elite_auto_table");
+	private static final Identifier ULTIMATE_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("ultimate_auto_table");
+	private static final Identifier EPIC_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("epic_auto_table");
+	private static final Identifier LEGENDARY_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("legendary_auto_table");
+	private static final Identifier ENDER_CRAFTER_PROVIDER = ExtendedCrafting.resource("ender_crafter");
+	private static final Identifier AUTO_ENDER_CRAFTER_PROVIDER = ExtendedCrafting.resource("auto_ender_crafter");
+	private static final Identifier FLUX_CRAFTER_PROVIDER = ExtendedCrafting.resource("flux_crafter");
+	private static final Identifier AUTO_FLUX_CRAFTER_PROVIDER = ExtendedCrafting.resource("auto_flux_crafter");
+	private static final Identifier COMPRESSOR_PROVIDER = ExtendedCrafting.resource("compressor");
 
 	@Override
 	public void registerClient(IWailaClientRegistration registration) {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				var core = (CraftingCoreTileEntity) accessor.getBlockEntity();
-				var recipe = core.getActiveRecipe();
+				if (accessor.getBlockEntity() instanceof CraftingCoreTileEntity core) {
+					var recipe = core.getActiveClientRecipe();
+					if (recipe != null) {
+						var output = recipe.assemble(CraftingInput.EMPTY);
 
-				if (recipe != null) {
-					var level = accessor.getLevel();
-					var output = recipe.getResultItem(level.registryAccess());
-
-					tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).build());
+						tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).toComponent());
+					}
 				}
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return CRAFTING_CORE_PROVIDER;
 			}
 		}, CraftingCoreBlock.class);
@@ -62,11 +79,11 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(1).build());
+				tooltip.add(ModTooltips.TIER.args(1).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return BASIC_TABLE_PROVIDER;
 			}
 		}, BasicTableBlock.class);
@@ -74,11 +91,11 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(2).build());
+				tooltip.add(ModTooltips.TIER.args(2).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return ADVANCED_TABLE_PROVIDER;
 			}
 		}, AdvancedTableBlock.class);
@@ -86,11 +103,11 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(3).build());
+				tooltip.add(ModTooltips.TIER.args(3).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return ELITE_TABLE_PROVIDER;
 			}
 		}, EliteTableBlock.class);
@@ -98,11 +115,11 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(4).build());
+				tooltip.add(ModTooltips.TIER.args(4).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return ULTIMATE_TABLE_PROVIDER;
 			}
 		}, UltimateTableBlock.class);
@@ -110,35 +127,35 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(5).build());
+				tooltip.add(ModTooltips.TIER.args(5).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return EPIC_TABLE_PROVIDER;
 			}
 		}, EpicTableBlock.class);
 
-        registration.registerBlockComponent(new IBlockComponentProvider() {
-            @Override
-            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-                tooltip.add(ModTooltips.TIER.args(6).build());
-            }
-
-            @Override
-            public ResourceLocation getUid() {
-                return LEGENDARY_TABLE_PROVIDER;
-            }
-        }, LegendaryTableBlock.class);
-
-        registration.registerBlockComponent(new IBlockComponentProvider() {
+		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(1).build());
+				tooltip.add(ModTooltips.TIER.args(6).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
+				return LEGENDARY_TABLE_PROVIDER;
+			}
+		}, LegendaryTableBlock.class);
+
+		registration.registerBlockComponent(new IBlockComponentProvider() {
+			@Override
+			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+				tooltip.add(ModTooltips.TIER.args(1).toComponent());
+			}
+
+			@Override
+			public Identifier getUid() {
 				return BASIC_AUTO_TABLE_PROVIDER;
 			}
 		}, BasicAutoTableBlock.class);
@@ -146,11 +163,11 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(2).build());
+				tooltip.add(ModTooltips.TIER.args(2).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return ADVANCED_AUTO_TABLE_PROVIDER;
 			}
 		}, AdvancedAutoTableBlock.class);
@@ -158,11 +175,11 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(3).build());
+				tooltip.add(ModTooltips.TIER.args(3).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return ELITE_AUTO_TABLE_PROVIDER;
 			}
 		}, EliteAutoTableBlock.class);
@@ -170,11 +187,11 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(4).build());
+				tooltip.add(ModTooltips.TIER.args(4).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return ULTIMATE_AUTO_TABLE_PROVIDER;
 			}
 		}, UltimateAutoTableBlock.class);
@@ -182,43 +199,42 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				tooltip.add(ModTooltips.TIER.args(5).build());
+				tooltip.add(ModTooltips.TIER.args(5).toComponent());
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return EPIC_AUTO_TABLE_PROVIDER;
 			}
 		}, EpicAutoTableBlock.class);
 
-        registration.registerBlockComponent(new IBlockComponentProvider() {
-            @Override
-            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-                tooltip.add(ModTooltips.TIER.args(6).build());
-            }
+		registration.registerBlockComponent(new IBlockComponentProvider() {
+			@Override
+			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+				tooltip.add(ModTooltips.TIER.args(6).toComponent());
+			}
 
-            @Override
-            public ResourceLocation getUid() {
-                return LEGENDARY_AUTO_TABLE_PROVIDER;
-            }
-        }, LegendaryAutoTableBlock.class);
+			@Override
+			public Identifier getUid() {
+				return LEGENDARY_AUTO_TABLE_PROVIDER;
+			}
+		}, LegendaryAutoTableBlock.class);
 
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				var crafter = (EnderCrafterTileEntity) accessor.getBlockEntity();
-				var recipe = crafter.getActiveRecipe();
+				if (accessor.getBlockEntity() instanceof EnderCrafterTileEntity crafter) {
+					var recipe = crafter.getActiveClientRecipe();
+					if (recipe != null) {
+						var output = recipe.assemble(CraftingInput.EMPTY);
 
-				if (recipe != null) {
-					var level = accessor.getLevel();
-					var output = recipe.getResultItem(level.registryAccess());
-
-					tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).build());
+						tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).toComponent());
+					}
 				}
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return ENDER_CRAFTER_PROVIDER;
 			}
 		}, EnderCrafterBlock.class);
@@ -226,19 +242,18 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				var crafter = (EnderCrafterTileEntity) accessor.getBlockEntity();
-				var recipe = crafter.getActiveRecipe();
+				if (accessor.getBlockEntity() instanceof EnderCrafterTileEntity crafter) {
+					var recipe = crafter.getActiveClientRecipe();
+					if (recipe != null) {
+						var output = recipe.assemble(CraftingInput.EMPTY);
 
-				if (recipe != null) {
-					var level = accessor.getLevel();
-					var output = recipe.getResultItem(level.registryAccess());
-
-					tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).build());
+						tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).toComponent());
+					}
 				}
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return AUTO_ENDER_CRAFTER_PROVIDER;
 			}
 		}, AutoEnderCrafterBlock.class);
@@ -246,19 +261,18 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				var crafter = (FluxCrafterTileEntity) accessor.getBlockEntity();
-				var recipe = crafter.getActiveRecipe();
+				if (accessor.getBlockEntity() instanceof FluxCrafterTileEntity crafter) {
+					var recipe = crafter.getActiveClientRecipe();
+					if (recipe != null) {
+						var output = recipe.assemble(CraftingInput.EMPTY);
 
-				if (recipe != null) {
-					var level = accessor.getLevel();
-					var output = recipe.getResultItem(level.registryAccess());
-
-					tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).build());
+						tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).toComponent());
+					}
 				}
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
 				return FLUX_CRAFTER_PROVIDER;
 			}
 		}, FluxCrafterBlock.class);
@@ -266,19 +280,37 @@ public class JadeCompat implements IWailaPlugin {
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-				var compressor = (CompressorTileEntity) accessor.getBlockEntity();
-				var recipe = compressor.getActiveRecipe();
+				if (accessor.getBlockEntity() instanceof FluxCrafterTileEntity crafter) {
+					var recipe = crafter.getActiveClientRecipe();
+					if (recipe != null) {
+						var output = recipe.assemble(CraftingInput.EMPTY);
 
-				if (recipe != null) {
-					var level = accessor.getLevel();
-					var output = recipe.getResultItem(level.registryAccess());
-
-					tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).build());
+						tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).toComponent());
+					}
 				}
 			}
 
 			@Override
-			public ResourceLocation getUid() {
+			public Identifier getUid() {
+				return AUTO_FLUX_CRAFTER_PROVIDER;
+			}
+		}, AutoFluxCrafterBlock.class);
+
+		registration.registerBlockComponent(new IBlockComponentProvider() {
+			@Override
+			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+				if (accessor.getBlockEntity() instanceof CompressorTileEntity compressor) {
+					var recipe = compressor.getActiveClientRecipe();
+					if (recipe != null) {
+						var output = recipe.assemble(CraftingInput.EMPTY);
+
+						tooltip.add(ModTooltips.CRAFTING.args(output.getCount(), output.getHoverName()).toComponent());
+					}
+				}
+			}
+
+			@Override
+			public Identifier getUid() {
 				return COMPRESSOR_PROVIDER;
 			}
 		}, CompressorBlock.class);
