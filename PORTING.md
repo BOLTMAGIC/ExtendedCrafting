@@ -8,8 +8,8 @@
 - PR history base: BOLTMAGIC/ExtendedCrafting `1.20`, commit
   `e4b4d774d9930232ec38ee7606c73eff8c4eff71`. The port is submitted as a source
   snapshot on that base, with the upstream 26.1 implementation provenance below.
-  Bolt currently has no 26.1 target branch. Retarget the draft PR to a dedicated
-  new-version branch before merging so that Forge 1.20 remains maintained.
+  PR #6 now targets Bolt's dedicated `26.1.2` branch, which was created from that
+  same initial tip. The Forge `1.20` branch remains separate.
 - Vanilla/upstream base: BlakeBr0/ExtendedCrafting `26.1`, commit
   `e54a4a4170d990dbd49973afae07043d68f81a14` (Extended Crafting 8.0.3).
 - Plus reference: adjacent `extendedcrafting/` checkout, commit
