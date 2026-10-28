@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
@@ -52,11 +53,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class RecipeMakerItem extends BaseItem {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final String NEW_LINE = System.lineSeparator() + "\t";
 	private static final char[] KEYS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*/".toCharArray();
+	private static final Pattern JS_IDENTIFIER = Pattern.compile("[A-Za-z_$][A-Za-z0-9_$]*");
 
 	public RecipeMakerItem(Identifier id) {
 		super(id, p -> p
@@ -109,6 +112,10 @@ public class RecipeMakerItem extends BaseItem {
 
 						return InteractionResult.SUCCESS;
 					}
+
+					if ("KubeJS".equals(type)) {
+						string = makeKubeJSRecipe(string, output);
+					}
 				}
 
 				setClipboard(string);
@@ -125,9 +132,14 @@ public class RecipeMakerItem extends BaseItem {
 			if (level.isClientSide()) {
 				var type = getType(stack);
                 var ops = RegistryOps.create(JsonOps.INSTANCE, level.registryAccess());
+				var output = player.getInventory().getItem(0);
 				var string = "CraftTweaker".equals(type)
 						? makeCraftTweakerCombinationRecipe(core)
-						: makeDatapackCombinationRecipe(core, player.getInventory().getItem(0), ops);
+						: makeDatapackCombinationRecipe(core, output, ops);
+
+				if ("KubeJS".equals(type)) {
+					string = makeKubeJSRecipe(string, output);
+				}
 
 				setClipboard(string);
 
@@ -515,6 +527,74 @@ public class RecipeMakerItem extends BaseItem {
 		object.add("result", encodeOutput(output, ops));
 
 		return GSON.toJson(object);
+	}
+
+	// Wrap a Datapack recipe in a KubeJS server script
+	private static String makeKubeJSRecipe(String json, ItemStack output) {
+		var string = new StringBuilder("ServerEvents.recipes((event) => {");
+		var outputId = output.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(output.getItem()).toString();
+
+		if (!outputId.isEmpty()) {
+			string.append("\n  // ").append(outputId);
+		}
+
+		string.append("\n  event.custom(").append(toJavaScript(JsonParser.parseString(json), "  ")).append(")");
+
+		if (!outputId.isEmpty()) {
+			string.append("\n  .id(").append(toJavaScriptString(outputId)).append(")");
+		}
+
+		return string.append(";\n});").toString();
+	}
+
+	// Write JSON as a JavaScript literal: identifier keys unquoted, strings single-quoted and escaped
+	private static String toJavaScript(JsonElement element, String indent) {
+		var inner = indent + "  ";
+
+		if (element.isJsonObject()) {
+			var entries = element.getAsJsonObject().entrySet();
+			if (entries.isEmpty())
+				return "{}";
+
+			var string = new StringBuilder("{");
+			var first = true;
+			for (var entry : entries) {
+				string.append(first ? "\n" : ",\n").append(inner);
+				var key = entry.getKey();
+				string.append(JS_IDENTIFIER.matcher(key).matches() ? key : toJavaScriptString(key));
+				string.append(": ").append(toJavaScript(entry.getValue(), inner));
+				first = false;
+			}
+
+			return string.append("\n").append(indent).append("}").toString();
+		}
+
+		if (element.isJsonArray()) {
+			var array = element.getAsJsonArray();
+			if (array.isEmpty())
+				return "[]";
+
+			var string = new StringBuilder("[");
+			for (int i = 0; i < array.size(); i++) {
+				string.append(i == 0 ? "\n" : ",\n").append(inner).append(toJavaScript(array.get(i), inner));
+			}
+
+			return string.append("\n").append(indent).append("]").toString();
+		}
+
+		if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
+			return toJavaScriptString(element.getAsString());
+		}
+
+		return element.toString();
+	}
+
+	private static String toJavaScriptString(String value) {
+		return "'" + value
+				.replace("\\", "\\\\")
+				.replace("'", "\\'")
+				.replace("\n", "\\n")
+				.replace("\r", "\\r") + "'";
 	}
 
 	private static JsonElement encodeOutput(ItemStack output, DynamicOps<JsonElement> ops) {
