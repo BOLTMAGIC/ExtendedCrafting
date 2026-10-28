@@ -107,6 +107,10 @@ public final class ModCreativeModeTabs {
                 stack.set(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.crafttweaker());
                 output.accept(stack, ModFeatureFlags.RECIPE_MAKER);
 
+                stack = new ItemStack(ModItems.RECIPE_MAKER.get());
+                stack.set(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.kubejs());
+                output.accept(stack, ModFeatureFlags.RECIPE_MAKER);
+
                 for (var singularity : SingularityRegistry.getInstance().getSingularities()) {
                     if (singularity.isEnabled()) {
                         output.accept(SingularityUtils.getItemForSingularity(singularity).create(), ModFeatureFlags.SINGULARITIES);

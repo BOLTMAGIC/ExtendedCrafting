@@ -36,4 +36,8 @@ public record RecipeMakerComponent(String type, boolean shapeless) {
     public static RecipeMakerComponent crafttweaker() {
         return new RecipeMakerComponent("CraftTweaker", true);
     }
+
+    public static RecipeMakerComponent kubejs() {
+        return new RecipeMakerComponent("KubeJS", false);
+    }
 }

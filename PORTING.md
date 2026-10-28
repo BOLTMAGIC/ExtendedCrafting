@@ -39,7 +39,17 @@ output count/data components, and writes the current tier for shapeless tables.
 CraftTweaker remains disabled/stubbed as in the 26.1 upstream; its old Forge
 integration is not represented as supported by this port.
 
+The Plus KubeJS Recipe Maker is restored as a third creative-tab variant
+(type `KubeJS`, shaped by default). It wraps the datapack JSON in a
+`ServerEvents.recipes` script with `event.custom(...)` and `.id('<output id>')`.
+The JSON is written as a JavaScript literal by walking the tree instead of
+the 1.20 regex, so component keys such as `minecraft:custom_name` stay quoted.
+
 ## Supporting corrections
+
+- Epic and Legendary (auto) block models carry the item `display` transforms.
+  In 1.20 these lived in `models/item/`; 26.1 item definitions point straight at
+  the block model, so without them the tables rendered flat in GUIs and JEI.
 
 - Auto-table recipe saving uses TABLE recipes; upstream queried FLUX_CRAFTER.
 - Selected recipe matching uses the saved grid and current table tier.
