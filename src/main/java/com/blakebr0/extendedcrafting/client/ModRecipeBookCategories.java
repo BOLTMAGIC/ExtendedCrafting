@@ -2,16 +2,16 @@ package com.blakebr0.extendedcrafting.client;
 
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import net.minecraft.client.RecipeBookCategories;
-import net.minecraftforge.client.event.RegisterRecipeBookCategoriesEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RegisterRecipeBookCategoriesEvent;
 
 public final class ModRecipeBookCategories {
     @SubscribeEvent
     public void onRegisterRecipeBookCategories(RegisterRecipeBookCategoriesEvent event) {
-        ModRecipeTypes.COMBINATION.ifPresent(type -> event.registerRecipeCategoryFinder(type, recipe -> RecipeBookCategories.UNKNOWN));
-        ModRecipeTypes.TABLE.ifPresent(type -> event.registerRecipeCategoryFinder(type, recipe -> RecipeBookCategories.UNKNOWN));
-        ModRecipeTypes.COMPRESSOR.ifPresent(type -> event.registerRecipeCategoryFinder(type, recipe -> RecipeBookCategories.UNKNOWN));
-        ModRecipeTypes.ENDER_CRAFTER.ifPresent(type -> event.registerRecipeCategoryFinder(type, recipe -> RecipeBookCategories.UNKNOWN));
-        ModRecipeTypes.FLUX_CRAFTER.ifPresent(type -> event.registerRecipeCategoryFinder(type, recipe -> RecipeBookCategories.UNKNOWN));
+        event.registerRecipeCategoryFinder(ModRecipeTypes.COMBINATION.get(), recipe -> RecipeBookCategories.UNKNOWN);
+        event.registerRecipeCategoryFinder(ModRecipeTypes.TABLE.get(), recipe -> RecipeBookCategories.UNKNOWN);
+        event.registerRecipeCategoryFinder(ModRecipeTypes.COMPRESSOR.get(), recipe -> RecipeBookCategories.UNKNOWN);
+        event.registerRecipeCategoryFinder(ModRecipeTypes.ENDER_CRAFTER.get(), recipe -> RecipeBookCategories.UNKNOWN);
+        event.registerRecipeCategoryFinder(ModRecipeTypes.FLUX_CRAFTER.get(), recipe -> RecipeBookCategories.UNKNOWN);
     }
 }

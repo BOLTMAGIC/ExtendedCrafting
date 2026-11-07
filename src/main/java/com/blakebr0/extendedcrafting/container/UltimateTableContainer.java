@@ -4,7 +4,7 @@ import com.blakebr0.cucumber.container.BaseContainerMenu;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.container.slot.TableOutputSlot;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.tileentity.UltimateTableTileEntity;
 import net.minecraft.core.BlockPos;
@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 public class UltimateTableContainer extends BaseContainerMenu {
 	private final Level level;
 	private final Container result;
+	private final ExtendedCraftingInventory matrix;
 
 	private UltimateTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
 		this(type, id, playerInventory, UltimateTableTileEntity.createInventoryHandler(), buffer.readBlockPos());
@@ -30,15 +31,14 @@ public class UltimateTableContainer extends BaseContainerMenu {
 		super(type, id, pos);
 		this.level = playerInventory.player.level();
 		this.result = new ResultContainer();
+		this.matrix = new ExtendedCraftingInventory(this, inventory, 9);
 
-		var matrix = new ExtendedCraftingInventory(this, inventory, 9);
-
-		this.addSlot(new TableOutputSlot(this, matrix, this.result, 0, 206, 89));
+		this.addSlot(new TableOutputSlot(this, this.matrix, this.result, 0, 206, 89));
 		
 		int i, j;
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
-				this.addSlot(new Slot(matrix, j + i * 9, 8 + j * 18, 18 + i * 18));
+				this.addSlot(new Slot(this.matrix, j + i * 9, 8 + j * 18, 18 + i * 18));
 			}
 		}
 
@@ -60,10 +60,12 @@ public class UltimateTableContainer extends BaseContainerMenu {
         if (this.level.isClientSide) {
             return;
         }
-		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, this.level);
+
+		var inventory = this.matrix.asCraftInput();
+		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level);
 
 		if (recipe.isPresent()) {
-			var result = recipe.get().assemble(matrix, this.level.registryAccess());
+			var result = recipe.get().value().assemble(inventory, this.level.registryAccess());
 			this.result.setItem(0, result);
 		} else {
 			this.result.setItem(0, ItemStack.EMPTY);
@@ -112,10 +114,10 @@ public class UltimateTableContainer extends BaseContainerMenu {
 	}
 
 	public static UltimateTableContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new UltimateTableContainer(ModContainerTypes.ULTIMATE_TABLE.get(), windowId, playerInventory, buffer);
+		return new UltimateTableContainer(ModMenuTypes.ULTIMATE_TABLE.get(), windowId, playerInventory, buffer);
 	}
 
 	public static UltimateTableContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new UltimateTableContainer(ModContainerTypes.ULTIMATE_TABLE.get(), windowId, playerInventory, inventory, pos);
+		return new UltimateTableContainer(ModMenuTypes.ULTIMATE_TABLE.get(), windowId, playerInventory, inventory, pos);
 	}
 }

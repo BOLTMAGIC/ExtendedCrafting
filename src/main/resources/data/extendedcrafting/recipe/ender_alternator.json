@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:ender_crafter"
+    }
+  ],
+  "pattern": [
+    " E ",
+    " I ",
+    "III"
+  ],
+  "key": {
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "I": {
+      "item": "extendedcrafting:ender_ingot"
+    }
+  },
+  "result": {
+    "id": "extendedcrafting:ender_alternator",
+    "count": 2
+  }
+}

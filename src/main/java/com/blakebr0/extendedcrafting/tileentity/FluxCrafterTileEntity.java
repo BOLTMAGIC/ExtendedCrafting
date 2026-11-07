@@ -3,19 +3,19 @@ package com.blakebr0.extendedcrafting.tileentity;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.cucumber.inventory.CachedRecipe;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.api.crafting.IFluxCrafterRecipe;
 import com.blakebr0.extendedcrafting.block.FluxAlternatorBlock;
 import com.blakebr0.extendedcrafting.container.FluxCrafterContainer;
-import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import com.blakebr0.extendedcrafting.util.AlternatorParticleOffsets;
-import com.blakebr0.extendedcrafting.util.EmptyContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -24,8 +24,8 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,7 +35,7 @@ import java.util.List;
 
 public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements MenuProvider {
 	private final BaseItemStackHandler inventory;
-	private final CachedRecipe<IFluxCrafterRecipe> recipe;
+	private final CachedRecipe<CraftingInput, IFluxCrafterRecipe> recipe;
 	private int progress;
 	private int progressReq;
 	protected boolean isGridChanged = true;
@@ -56,15 +56,15 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.loadAdditional(tag, lookup);
 		this.progress = tag.getInt("Progress");
 		this.progressReq = tag.getInt("ProgressReq");
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.saveAdditional(tag, lookup);
 		tag.putInt("Progress", this.progress);
 		tag.putInt("ProgressReq", this.progressReq);
 	}
@@ -84,7 +84,7 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		var selectedRecipe = tile.getSelectedRecipeGrid();
 
 		if (recipe != null && (selectedRecipe == null || recipe.matches(selectedRecipe, level))) {
-			var result = recipe.assemble(tile.inventory.toRecipeInventory(0, 9), level.registryAccess());
+			var result = recipe.assemble(tile.inventory.toCraftingInput(3, 3, 0, 9), level.registryAccess());
 			var output = tile.inventory.getStackInSlot(9);
 
 			if (StackHelper.canCombineStacks(result, output)) {
@@ -136,7 +136,7 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		return createInventoryHandler(null);
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
 		return BaseItemStackHandler.create(10, onContentsChanged, builder -> {
 			builder.setOutputSlots(9);
 			builder.setCanInsert((slot, stack) -> false);
@@ -148,12 +148,12 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		return null;
 	}
 
-	private CraftingContainer getSelectedRecipeGrid() {
+	private CraftingInput getSelectedRecipeGrid() {
 		var storage = this.getRecipeStorage();
 		if (storage != null) {
 			var grid = storage.getSelectedRecipeGrid();
 			if (grid != null) {
-				return new ExtendedCraftingInventory(EmptyContainer.INSTANCE, storage.getSelectedRecipeGrid(), 3);
+				return grid.toCraftingInput(3, 3);
 			}
 		}
 
@@ -178,6 +178,9 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 			var pos = this.getBlockPos();
 
 			BlockPos.betweenClosedStream(pos.offset(-3, -3, -3), pos.offset(3, 3, 3)).forEach(aoePos -> {
+				if (!level.isLoaded(aoePos))
+					return;
+
 				var tile = level.getBlockEntity(aoePos);
 				if (tile instanceof FluxAlternatorTileEntity alternator && alternator.getEnergy().getEnergyStored() >= this.recipe.get().getPowerRate())
 					alternators.add(alternator);
@@ -211,9 +214,11 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		level.sendParticles(ParticleTypes.PORTAL, x, y, z, 1, 0, 0, 0, 0.1D);
 	}
 
-	private void onContentsChanged() {
-		this.isGridChanged = true;
-		this.setChangedFast();
+	private void onContentsChanged(int slot) {
+		if (!this.isGridChanged) {
+			this.isGridChanged = true;
+			this.setChanged();
+		}
 	}
 
 	public int getProgress() {
@@ -225,13 +230,11 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 	}
 
 	public IFluxCrafterRecipe getActiveRecipe() {
-		if (this.level == null)
-			return null;
-
-		if (!this.isGridChanged) {
-			return this.recipe.get();
+		if (this.isGridChanged) {
+			this.isGridChanged = false;
+			return this.recipe.checkAndGet(this.inventory.toCraftingInput(3, 3, 0, 9), this.level);
 		}
 
-		return this.recipe.checkAndGet(this.inventory.toRecipeInventory(0, 9), this.level);
+		return this.recipe.get();
 	}
 }

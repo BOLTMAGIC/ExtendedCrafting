@@ -4,13 +4,13 @@ import com.blakebr0.cucumber.client.render.GhostItemRenderer;
 import com.blakebr0.cucumber.client.screen.BaseContainerScreen;
 import com.blakebr0.cucumber.client.screen.widget.EnergyBarWidget;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import com.google.common.collect.Lists;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.client.screen.button.RecipeSelectButton;
 import com.blakebr0.extendedcrafting.client.screen.button.ToggleTableRunningButton;
 import com.blakebr0.extendedcrafting.container.EpicAutoTableContainer;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
+import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public class EpicAutoTableScreen extends BaseContainerScreen<EpicAutoTableContainer> {
-	public static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/epic_auto_table.png");
+	public static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/epic_auto_table.png");
 	private AutoTableTileEntity tile;
 
 	public EpicAutoTableScreen(EpicAutoTableContainer container, Inventory inventory, Component title) {
@@ -58,7 +58,7 @@ public class EpicAutoTableScreen extends BaseContainerScreen<EpicAutoTableContai
 
 		super.renderTooltip(gfx, mouseX, mouseY);
 
-		if (mouseX > x + 262 && mouseX < x + 239 && mouseY > y + 131 && mouseY < y + 141) {
+		if (mouseX > x + 262 && mouseX < x + 275 && mouseY > y + 131 && mouseY < y + 147) {
 			gfx.renderTooltip(this.font, ModTooltips.TOGGLE_AUTO_CRAFTING.color(ChatFormatting.WHITE).build(), mouseX, mouseY);
 		}
 	}
@@ -73,7 +73,7 @@ public class EpicAutoTableScreen extends BaseContainerScreen<EpicAutoTableContai
 
 	@Override
 	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		super.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
+		super.renderBg(gfx, partialTicks, mouseX, mouseY);
 
 		int x = this.getGuiLeft();
 		int y = this.getGuiTop();

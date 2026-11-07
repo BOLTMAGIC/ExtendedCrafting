@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "extendedcrafting:black_iron_block"
+    }
+  ],
+  "result": {
+    "id": "extendedcrafting:black_iron_ingot",
+    "count": 9
+  }
+}

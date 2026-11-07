@@ -1,7 +1,7 @@
 package com.blakebr0.extendedcrafting.container;
 
 import com.blakebr0.cucumber.container.BaseContainerMenu;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -67,10 +67,10 @@ public class CraftingCoreContainer extends BaseContainerMenu {
 	}
 
 	public static CraftingCoreContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new CraftingCoreContainer(ModContainerTypes.CRAFTING_CORE.get(), windowId, playerInventory, buffer);
+		return new CraftingCoreContainer(ModMenuTypes.CRAFTING_CORE.get(), windowId, playerInventory, buffer);
 	}
 
 	public static CraftingCoreContainer create(int windowId, Inventory playerInventory, BlockPos pos) {
-		return new CraftingCoreContainer(ModContainerTypes.CRAFTING_CORE.get(), windowId, playerInventory, pos);
+		return new CraftingCoreContainer(ModMenuTypes.CRAFTING_CORE.get(), windowId, playerInventory, pos);
 	}
 }

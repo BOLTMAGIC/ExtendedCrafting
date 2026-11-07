@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#c:nuggets/black_iron",
+    "#c:nuggets/crystaltine",
+    "#c:nuggets/ender_ingot",
+    "#c:nuggets/enhanced_ender_ingot",
+    "#c:nuggets/enhanced_redstone_ingot",
+    "#c:nuggets/redstone_ingot",
+    "#c:nuggets/the_ultimate"
+  ]
+}

@@ -1,47 +1,57 @@
 package com.blakebr0.extendedcrafting.crafting.recipe;
 
-import com.blakebr0.cucumber.crafting.ISpecialRecipe;
+import com.blakebr0.cucumber.crafting.ingredient.IngredientWithCount;
 import com.blakebr0.extendedcrafting.api.crafting.ICompressorRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 
-public class CompressorRecipe implements ISpecialRecipe, ICompressorRecipe {
-	private final ResourceLocation recipeId;
-	private final NonNullList<Ingredient> inputs;
-	private final ItemStack output;
-	private final int inputCount;
+import java.util.stream.Collectors;
+
+public class CompressorRecipe implements ICompressorRecipe {
+	private final NonNullList<IngredientWithCount> inputs;
+	private final ItemStack result;
 	private final Ingredient catalyst;
 	private final int powerCost;
 	private final int powerRate;
-	
-	public CompressorRecipe(ResourceLocation recipeId, Ingredient input, ItemStack output, int inputCount, Ingredient catalyst, int powerCost) {
-		this(recipeId, input, output, inputCount, catalyst, powerCost, ModConfigs.COMPRESSOR_POWER_RATE.get());
-	}
 
-	public CompressorRecipe(ResourceLocation recipeId, Ingredient input, ItemStack output, int inputCount, Ingredient catalyst, int powerCost, int powerRate) {
-		this.recipeId = recipeId;
-		this.inputs = NonNullList.of(Ingredient.EMPTY, input);
-		this.output = output;
-		this.inputCount = inputCount;
+	public CompressorRecipe(NonNullList<IngredientWithCount> input, ItemStack result, Ingredient catalyst, int powerCost, int powerRate) {
+		this.inputs = input;
+		this.result = result;
 		this.catalyst = catalyst;
 		this.powerCost = powerCost;
 		this.powerRate = powerRate;
+	}
+
+	@Override
+	public boolean matches(CraftingInput inventory, Level level) {
+		if (inventory.ingredientCount() != 2)
+			return false;
+
+		var input = inventory.getItem(0);
+		var catalyst = inventory.getItem(1);
+
+		return this.inputs.getFirst().getItems().anyMatch(s -> s.is(input.getItem())) && this.catalyst.test(catalyst);
+	}
+
+	@Override
+	public ItemStack assemble(CraftingInput recipeInput, HolderLookup.Provider provider) {
+		return this.result.copy();
 	}
 
 	@Override
@@ -50,18 +60,15 @@ public class CompressorRecipe implements ISpecialRecipe, ICompressorRecipe {
 	}
 
 	@Override
-	public ItemStack getResultItem(RegistryAccess access) {
-		return this.output;
+	public ItemStack getResultItem(HolderLookup.Provider provider) {
+		return this.result;
 	}
 
 	@Override
 	public NonNullList<Ingredient> getIngredients() {
-		return this.inputs;
-	}
-
-	@Override
-	public ResourceLocation getId() {
-		return this.recipeId;
+		return this.inputs.stream()
+				.map(ICustomIngredient::toVanilla)
+				.collect(Collectors.toCollection(NonNullList::create));
 	}
 
 	@Override
@@ -75,31 +82,16 @@ public class CompressorRecipe implements ISpecialRecipe, ICompressorRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(IItemHandler inventory, RegistryAccess access) {
-		return this.output.copy();
+	public boolean isSpecial() {
+		return true;
 	}
 
 	@Override
-	public ItemStack assemble(Container inventory, RegistryAccess access) {
-		return this.output.copy();
-	}
+	public int getCount(int index) {
+		if (index < 0 || index >= this.inputs.size())
+			return -1;
 
-	@Override
-	public boolean matches(IItemHandler inventory) {
-		var input = inventory.getStackInSlot(0);
-		var catalyst = inventory.getStackInSlot(1);
-
-		return this.inputs.get(0).test(input) && this.catalyst.test(catalyst);
-	}
-
-	@Override
-	public boolean matches(Container inventory, Level level) {
-		return this.matches(new InvWrapper(inventory));
-	}
-
-	@Override
-	public int getInputCount() {
-		return this.inputCount;
+		return this.inputs.get(index).getCount();
 	}
 
 	@Override
@@ -118,36 +110,45 @@ public class CompressorRecipe implements ISpecialRecipe, ICompressorRecipe {
 	}
 
 	public static class Serializer implements RecipeSerializer<CompressorRecipe> {
-		@Override
-		public CompressorRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-			var input = Ingredient.fromJson(json.getAsJsonObject("ingredient"));
-			var output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
-			int inputCount = GsonHelper.getAsInt(json, "inputCount", 10000);
-			var catalyst = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "catalyst"));
-			int powerCost = GsonHelper.getAsInt(json, "powerCost");
-			int powerRate = GsonHelper.getAsInt(json, "powerRate", ModConfigs.COMPRESSOR_POWER_RATE.get());
+		public static final MapCodec<CompressorRecipe> CODEC = RecordCodecBuilder.mapCodec(builder ->
+				builder.group(
+						IngredientWithCount.CODEC
+								.flatComapMap(ingredient -> NonNullList.of(IngredientWithCount.EMPTY, ingredient), ingredients -> DataResult.success(ingredients.getFirst()))
+								.fieldOf("ingredient").forGetter(recipe -> recipe.inputs),
+						ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+						Ingredient.CODEC_NONEMPTY.fieldOf("catalyst").forGetter(recipe -> recipe.catalyst),
+						Codec.INT.fieldOf("power_cost").forGetter(recipe -> recipe.powerCost),
+						Codec.INT.optionalFieldOf("power_rate", ModConfigs.COMPRESSOR_POWER_RATE.get()).forGetter(recipe -> recipe.powerRate)
+				).apply(builder, CompressorRecipe::new)
+		);
+		public static final StreamCodec<RegistryFriendlyByteBuf, CompressorRecipe> STREAM_CODEC = StreamCodec.of(
+				CompressorRecipe.Serializer::toNetwork, CompressorRecipe.Serializer::fromNetwork
+		);
 
-			return new CompressorRecipe(recipeId, input, output, inputCount, catalyst, powerCost, powerRate);
+		@Override
+		public MapCodec<CompressorRecipe> codec() {
+			return CODEC;
 		}
 
 		@Override
-		public CompressorRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-			var input = Ingredient.fromNetwork(buffer);
-			var output = buffer.readItem();
-			int inputCount = buffer.readInt();
-			var catalyst = Ingredient.fromNetwork(buffer);
+		public StreamCodec<RegistryFriendlyByteBuf, CompressorRecipe> streamCodec() {
+			return STREAM_CODEC;
+		}
+
+		private static CompressorRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+			var input = IngredientWithCount.STREAM_CODEC.decode(buffer);
+			var result = ItemStack.STREAM_CODEC.decode(buffer);
+			var catalyst = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
 			int powerCost = buffer.readInt();
 			int powerRate = buffer.readInt();
 
-			return new CompressorRecipe(recipeId, input, output, inputCount, catalyst, powerCost, powerRate);
+			return new CompressorRecipe(NonNullList.of(IngredientWithCount.EMPTY, input), result, catalyst, powerCost, powerRate);
 		}
 
-		@Override
-		public void toNetwork(FriendlyByteBuf buffer, CompressorRecipe recipe) {
-			recipe.inputs.get(0).toNetwork(buffer);
-			buffer.writeItem(recipe.output);
-			buffer.writeInt(recipe.inputCount);
-			recipe.catalyst.toNetwork(buffer);
+		private static void toNetwork(RegistryFriendlyByteBuf buffer, CompressorRecipe recipe) {
+			IngredientWithCount.STREAM_CODEC.encode(buffer, recipe.inputs.getFirst());
+			ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+			Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.catalyst);
 			buffer.writeInt(recipe.powerCost);
 			buffer.writeInt(recipe.powerRate);
 		}

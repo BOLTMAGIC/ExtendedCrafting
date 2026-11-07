@@ -3,47 +3,48 @@ package com.blakebr0.extendedcrafting.tileentity;
 import com.blakebr0.cucumber.energy.BaseEnergyStorage;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import com.blakebr0.cucumber.inventory.RecipeInventory;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
-import com.blakebr0.extendedcrafting.container.*;
-import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
+import com.blakebr0.extendedcrafting.container.AdvancedAutoTableContainer;
+import com.blakebr0.extendedcrafting.container.BasicAutoTableContainer;
+import com.blakebr0.extendedcrafting.container.EliteAutoTableContainer;
+import com.blakebr0.extendedcrafting.container.EpicAutoTableContainer;
+import com.blakebr0.extendedcrafting.container.LegendaryAutoTableContainer;
+import com.blakebr0.extendedcrafting.container.UltimateAutoTableContainer;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
-import com.blakebr0.extendedcrafting.util.EmptyContainer;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.Optional;
 
 public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implements MenuProvider {
-    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
-    private WrappedRecipe recipe;
+    @Nullable
+    private Either<Recipe<CraftingInput>, ITableRecipe> recipe;
     private int progress;
     private boolean running = true;
     private boolean isGridChanged = true;
@@ -52,81 +53,50 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         super(type, pos, state);
     }
 
-    /**
-     * Saves more info from the table
-     * @param tag The already saved info as NBT
-     */
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.putInt("Progress", this.progress);
-        tag.putBoolean("Running", this.running);
-        tag.put("Energy", this.getEnergy().serializeNBT());
-        tag.merge(this.getRecipeStorage().serializeNBT());
-    }
-
-    /**
-     * Loads save data
-     * @param tag The save data as NBT
-     */
-    @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
         this.progress = tag.getInt("Progress");
         this.running = tag.getBoolean("Running");
-        this.getEnergy().deserializeNBT(tag.get("Energy"));
-        this.getRecipeStorage().deserializeNBT(tag);
+        this.getEnergy().deserializeNBT(lookup, tag.get("Energy"));
+        this.getRecipeStorage().deserializeNBT(lookup, tag);
     }
 
-    /**
-     * Runs whenever the block is loaded.
-     * Separate from ::load, in that it doesn't load data.
-     */
+    @Override
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        tag.putInt("Progress", this.progress);
+        tag.putBoolean("Running", this.running);
+        tag.putInt("Energy", this.getEnergy().getEnergyStored());
+        tag.merge(this.getRecipeStorage().serializeNBT(lookup));
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();
 
         // on load, we will re-validate the recipe outputs to ensure they are still correct
         if (this.level != null && !this.level.isClientSide()) {
-            this.getRecipeStorage().onLoad(this.level, ModRecipeTypes.TABLE.get());
+            this.getRecipeStorage().validate(inventory -> {
+                var tableInventory = TableCraftingInput.of(inventory.width(), inventory.height(), inventory.items(), this.getTier());
+                return this.level.getRecipeManager()
+                        .getRecipeFor(ModRecipeTypes.TABLE.get(), tableInventory, this.level)
+                        .map(r -> r.value().assemble(tableInventory, this.level.registryAccess()))
+                        .orElse(ItemStack.EMPTY);
+            });
         }
     }
 
-    /**
-     * TODO: COMMENT
-     * @param cap
-     * @param side
-     * @return
-     * @param <T>
-     */
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
-            return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
-        }
-
-        return super.getCapability(cap, side);
-    }
-
-    /**
-     * Method that runs every tick. Allows the tile entity to do stuff.
-     * Interestingly, this is a static method TODO: Figure out why (optional)
-     * @param level TODO: Learn what levels are
-     * @param pos Block position
-     * @param state TODO: Learn what BlockStates are
-     * @param tile The tile entity being run.
-     */
     public static void tick(Level level, BlockPos pos, BlockState state, AutoTableTileEntity tile) {
         var energy = tile.getEnergy();
 
         if (tile.running) {
             var recipe = tile.getActiveRecipe();
-            var selectedRecipe = tile.getRecipeStorage().getSelectedRecipeGrid();
 
-            if (recipe != null && (selectedRecipe == null || recipe.matchesSavedRecipe(selectedRecipe, level))) {
+            if (recipe != null && tile.matchesSelectedRecipe(recipe)) {
                 var recipeInventory = tile.getRecipeInventory();
                 var inventory = tile.getInventory();
-                var result = recipe.getCraftingResult(recipeInventory, level.registryAccess());
+                var result = recipe.map(v -> v.assemble(recipeInventory, level.registryAccess()), t -> t.assemble(recipeInventory, level.registryAccess()));
                 int outputSlot = inventory.getSlots() - 1;
                 var output = inventory.getStackInSlot(outputSlot);
                 int powerRate = ModConfigs.AUTO_TABLE_POWER_RATE.get();
@@ -136,16 +106,22 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
                     energy.extractEnergy(powerRate, false);
 
                     if (tile.progress >= tile.getProgressRequired()) {
-                        var remaining = recipe.getRemainingItems(recipeInventory);
+                        var remaining = recipe.map(v -> v.getRemainingItems(recipeInventory), t -> t.getRemainingItems(recipeInventory));
 
-                        for (int i = 0; i < recipeInventory.getContainerSize(); i++) {
-                            inventory.setStackInSlot(i, StackHelper.shrink(inventory.getStackInSlot(i), 1, false));
+                        for (int k = 0; k < recipeInventory.height(); k++) {
+                            for (int l = 0; l < recipeInventory.width(); l++) {
+                                var size = (recipeInventory.tier() * 2) + 1;
+                                var index = l + recipeInventory.left() + (k + recipeInventory.top()) * size;
+                                var remainingStack = remaining.get(l + k * recipeInventory.width());
+                                var currentStack = inventory.getStackInSlot(index);
 
-                            var remainingStack = remaining.get(i);
-                            var currentStack = inventory.getStackInSlot(i);
+                                inventory.setStackInSlot(index, StackHelper.shrink(currentStack, 1, false));
 
-                            if (StackHelper.canCombineStacks(remainingStack, currentStack)) {
-                                inventory.setStackInSlot(i, StackHelper.combineStacks(currentStack, remainingStack));
+                                currentStack = inventory.getStackInSlot(index);
+
+                                if (StackHelper.canCombineStacks(remainingStack, currentStack)) {
+                                    inventory.setStackInSlot(index, StackHelper.combineStacks(inventory.getStackInSlot(index), remainingStack));
+                                }
                             }
                         }
 
@@ -171,69 +147,48 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
         int insertPowerRate = ModConfigs.AUTO_TABLE_INSERT_POWER_RATE.get();
 
-        if (tile.getEnergy().getEnergyStored() >= insertPowerRate) {
-            int selected = tile.getRecipeStorage().getSelected();
-            if (selected != -1) {
-                tile.getAboveInventory().ifPresent(handler -> {
-                    for (int i = 0; i < handler.getSlots(); i++) {
-                        var stack = handler.getStackInSlot(i);
+        if (tile.getRecipeStorage().getSelected() != -1) {
+            tile.getAboveInventory().ifPresent(handler -> {
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    // Bound each source slot to its initial count. Every item pays for its own
+                    // insertion, including when a larger table fills in one tick.
+                    int available = handler.getStackInSlot(i).getCount();
 
-                        for (int j = stack.getCount(); j > 0; j--) {
-                            if (!stack.isEmpty() && !handler.extractItem(i, 1, true).isEmpty()) {
-                                var inserted = tile.tryInsertItemIntoGrid(stack);
+                    for (int n = 0; n < available; n++) {
+                        if (tile.getEnergy().getEnergyStored() < insertPowerRate)
+                            break;
 
-                                if (inserted) {
-                                    handler.extractItem(i, 1, false);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
+                        var stack = handler.extractItem(i, 1, true);
+                        if (stack.isEmpty() || !tile.tryInsertItemIntoGrid(stack))
+                            break;
+
+                        handler.extractItem(i, 1, false);
                     }
-                });
-            }
+                }
+            });
         }
 
         tile.dispatchIfChanged();
     }
 
-    /**
-     * Gets recipe progress. Increments every tick while crafting something.
-     * @return Recipe progress
-     */
     public int getProgress() {
         return this.progress;
     }
 
-    /**
-     * Returns whether the table is running (able to craft)
-     * @return
-     */
     public boolean isRunning() {
         return this.running;
     }
 
-    /**
-     * Toggles whether the table is running (attempts to craft)
-     */
     public void toggleRunning() {
         this.running = !this.running;
         this.setChangedAndDispatch();
     }
 
-    /**
-     * Sets the selected recipe in the storage.
-     * @param index Stored recipe index TODO: Scrap
-     */
     public void selectRecipe(int index) {
         this.getRecipeStorage().setSelected(index);
         this.setChangedAndDispatch();
     }
 
-    /**
-     *
-     * @param index
-     */
     public void saveRecipe(int index) {
         var level = this.getLevel();
         if (level == null)
@@ -247,17 +202,18 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         var result = ItemStack.EMPTY;
 
         if (recipe != null) {
-            result = recipe.assemble(inventory, level.registryAccess());
-        } else {
-            var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, this.getInventory(), 3, true);
-            var vanilla = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftingInventory, level).orElse(null);
+            result = recipe.value().assemble(inventory, level.registryAccess());
+        } else if (this instanceof Basic && ModConfigs.TABLE_USE_VANILLA_RECIPES.get()) {
+            var vanilla = level.getRecipeManager()
+                    .getRecipeFor(RecipeType.CRAFTING, inventory, level)
+                    .orElse(null);
 
             if (vanilla != null) {
-                result = vanilla.assemble(craftingInventory, level.registryAccess());
+                result = vanilla.value().assemble(inventory, level.registryAccess());
             }
         }
 
-        this.getRecipeStorage().setRecipe(index, inventory, result);
+        this.getRecipeStorage().setRecipe(index, this.getInventory(), result);
         this.setChangedAndDispatch();
     }
 
@@ -266,26 +222,41 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         this.setChangedAndDispatch();
     }
 
-    public RecipeInventory getRecipeInventory() {
-        return this.getInventory().toRecipeInventory(0, this.getInventory().getSlots() - 1);
+    public TableCraftingInput getRecipeInventory() {
+        var inventory = this.getInventory();
+        var size = (int) Math.sqrt(inventory.getSlots() - 1);
+        return TableCraftingInput.of(size, size, inventory.getStacks().subList(0, inventory.getSlots() - 1), this.getTier());
     }
 
-    public WrappedRecipe getActiveRecipe() {
+    public Either<Recipe<CraftingInput>, ITableRecipe> getActiveRecipe() {
         if (this.level == null)
             return null;
 
         var inventory = this.getRecipeInventory();
 
-        if (this.isGridChanged && (this.recipe == null || !this.recipe.matches(inventory, this.level))) {
-            var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level).orElse(null);
+        if (this.isGridChanged && (this.recipe == null || !this.recipe.map(v -> v.matches(inventory, this.level), t -> t.matches(inventory, this.level)))) {
+            var recipe = this.level.getRecipeManager()
+                    .getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level)
+                    .map(RecipeHolder::value)
+                    .orElse(null);
 
-            this.recipe = recipe != null ? new WrappedRecipe(recipe) : null;
+            if (recipe != null) {
+                this.recipe = Either.right(recipe);
+            } else {
+                this.recipe = null;
+            }
 
-            if (this.recipe == null && ModConfigs.TABLE_USE_VANILLA_RECIPES.get() && this instanceof Basic) {
-                var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, this.getInventory(), 3, true);
-                var vanilla = this.level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftingInventory, this.level).orElse(null);
+            if (recipe == null && ModConfigs.TABLE_USE_VANILLA_RECIPES.get() && this instanceof Basic) {
+                var vanillaRecipe = this.level.getRecipeManager()
+                        .getRecipeFor(RecipeType.CRAFTING, inventory, this.level)
+                        .map(RecipeHolder::value)
+                        .orElse(null);
 
-                this.recipe = vanilla != null ? new WrappedRecipe(vanilla, craftingInventory) : null;
+                if (vanillaRecipe != null) {
+                    this.recipe = Either.left(vanillaRecipe);
+                } else {
+                    this.recipe = null;
+                }
             }
 
             this.isGridChanged = false;
@@ -294,15 +265,33 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         return this.recipe;
     }
 
+    public boolean matchesSelectedRecipe(Either<Recipe<CraftingInput>, ITableRecipe> recipe) {
+        if (this.level == null)
+            return false;
+
+        var selectedRecipe = this.getRecipeStorage().getSelectedRecipeGrid();
+        if (selectedRecipe == null)
+            return true;
+
+        var size = (int) Math.sqrt(selectedRecipe.getSlots());
+        var inventory = TableCraftingInput.of(size, size, selectedRecipe.getStacks(), this.getTier());
+
+        return recipe.map(v -> v.matches(inventory, this.level), t -> t.matches(inventory, this.level));
+    }
+
     public abstract int getProgressRequired();
 
     public abstract TableRecipeStorage getRecipeStorage();
 
     public abstract BaseEnergyStorage getEnergy();
 
-    protected void onContentsChanged() {
-        this.isGridChanged = true;
-        this.setChangedFast();
+    public abstract int getTier();
+
+    protected void onContentsChanged(int slot) {
+        if (!this.isGridChanged) {
+            this.isGridChanged = true;
+            this.setChanged();
+        }
     }
 
     private void updateResult(ItemStack stack, int slot) {
@@ -327,19 +316,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         }
     }
 
-    private LazyOptional<IItemHandler> getAboveInventory() {
+    private Optional<IItemHandler> getAboveInventory() {
         var level = this.getLevel();
         var pos = this.getBlockPos().above();
 
         if (level != null) {
-            var tile = level.getBlockEntity(pos);
-
-            if (tile != null) {
-                return tile.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN);
-            }
+            var capability = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, Direction.DOWN);
+            return Optional.ofNullable(capability);
         }
 
-        return LazyOptional.empty();
+        return Optional.empty();
     }
 
     private boolean tryInsertItemIntoGrid(ItemStack input) {
@@ -385,44 +371,6 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         return false;
     }
 
-    public static class WrappedRecipe {
-        private final BiFunction<Container, RegistryAccess, ItemStack> resultFunc;
-        private final BiFunction<Container, Level, Boolean> matchesFunc;
-        private final BiFunction<CraftingContainer, Level, Boolean> matchesSavedRecipeFunc;
-        private final Function<Container, NonNullList<ItemStack>> remainingItemsFunc;
-
-        public WrappedRecipe(CraftingRecipe recipe, CraftingContainer craftingInventory) {
-            this.resultFunc = (inventory, access) -> recipe.assemble(craftingInventory, access);
-            this.matchesFunc = (inventory, level) -> recipe.matches(craftingInventory, level);
-            this.matchesSavedRecipeFunc = recipe::matches;
-            this.remainingItemsFunc = inventory -> recipe.getRemainingItems(craftingInventory);
-        }
-
-        public WrappedRecipe(ITableRecipe recipe) {
-            this.resultFunc = recipe::assemble;
-            this.matchesFunc = recipe::matches;
-            this.matchesSavedRecipeFunc = recipe::matches;
-            this.remainingItemsFunc = recipe::getRemainingItems;
-        }
-
-        public ItemStack getCraftingResult(Container inventory, RegistryAccess access) {
-            return this.resultFunc.apply(inventory, access);
-        }
-
-        public boolean matches(Container inventory, Level level) {
-            return this.matchesFunc.apply(inventory, level);
-        }
-
-        public boolean matchesSavedRecipe(BaseItemStackHandler inventory, Level level) {
-            var size = (int) Math.sqrt(inventory.getSlots());
-            return this.matchesSavedRecipeFunc.apply(new ExtendedCraftingInventory(EmptyContainer.INSTANCE, inventory, size), level);
-        }
-
-        public NonNullList<ItemStack> getRemainingItems(Container inventory) {
-            return this.remainingItemsFunc.apply(inventory);
-        }
-    }
-
     public static class Basic extends AutoTableTileEntity {
         private final BaseItemStackHandler inventory;
         private final BaseEnergyStorage energy;
@@ -465,11 +413,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return this.energy;
         }
 
+        @Override
+        public int getTier() {
+            return 1;
+        }
+
         public static BaseItemStackHandler createInventoryHandler() {
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(10, onContentsChanged, builder -> {
                 builder.setOutputSlots(9);
                 builder.setCanInsert((slot, stack) -> false);
@@ -519,11 +472,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return this.energy;
         }
 
+        @Override
+        public int getTier() {
+            return 2;
+        }
+
         public static BaseItemStackHandler createInventoryHandler() {
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(26, onContentsChanged, builder -> {
                 builder.setOutputSlots(25);
                 builder.setCanInsert((slot, stack) -> false);
@@ -573,11 +531,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return this.energy;
         }
 
+        @Override
+        public int getTier() {
+            return 3;
+        }
+
         public static BaseItemStackHandler createInventoryHandler() {
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(50, onContentsChanged, builder -> {
                 builder.setOutputSlots(49);
                 builder.setCanInsert((slot, stack) -> false);
@@ -627,11 +590,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return this.energy;
         }
 
+        @Override
+        public int getTier() {
+            return 4;
+        }
+
         public static BaseItemStackHandler createInventoryHandler() {
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(82, onContentsChanged, builder -> {
                 builder.setOutputSlots(81);
                 builder.setCanInsert((slot, stack) -> false);
@@ -681,11 +649,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return this.energy;
         }
 
+        @Override
+        public int getTier() {
+            return 5;
+        }
+
         public static BaseItemStackHandler createInventoryHandler() {
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(122, onContentsChanged, builder -> {
                 builder.setOutputSlots(121);
                 builder.setCanInsert((slot, stack) -> false);
@@ -735,11 +708,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return this.energy;
         }
 
+        @Override
+        public int getTier() {
+            return 6;
+        }
+
         public static BaseItemStackHandler createInventoryHandler() {
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(170, onContentsChanged, builder -> {
                 builder.setOutputSlots(169);
                 builder.setCanInsert((slot, stack) -> false);

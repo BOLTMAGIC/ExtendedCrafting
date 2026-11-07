@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "extendedcrafting:black_iron_nugget"
+    }
+  },
+  "result": {
+    "id": "extendedcrafting:black_iron_ingot"
+  }
+}

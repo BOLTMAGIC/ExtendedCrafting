@@ -10,6 +10,7 @@ import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -23,27 +24,24 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
-import java.util.List;
-
-public class BasicTableCategory implements IRecipeCategory<ITableRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/basic_crafting.png");
-	public static final RecipeType<ITableRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "basic_crafting", ITableRecipe.class);
+public class BasicTableCategory implements IRecipeCategory<RecipeHolder<ITableRecipe>> {
+	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/basic_crafting.png");
+	public static final RecipeType<RecipeHolder<ITableRecipe>> RECIPE_TYPE = RecipeType.createRecipeHolderType(ExtendedCrafting.resource("basic_crafting"));
 
 	private final IDrawable background;
 	private final IDrawable icon;
-	private final IDrawable shapeless;
 	private final IDrawable required;
 
 	public BasicTableCategory(IGuiHelper helper) {
 		this.background = helper.createDrawable(TEXTURE, 0, 0, 116, 54);
 		this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.BASIC_TABLE.get()));
-		this.shapeless = helper.createDrawable(JeiCompat.ICONS, 17, 0, 15, 15);
 		this.required = helper.createDrawable(JeiCompat.ICONS, 0, 0, 15, 15);
 	}
 
 	@Override
-	public RecipeType<ITableRecipe> getRecipeType() {
+	public RecipeType<RecipeHolder<ITableRecipe>> getRecipeType() {
 		return RECIPE_TYPE;
 	}
 
@@ -63,15 +61,14 @@ public class BasicTableCategory implements IRecipeCategory<ITableRecipe> {
 	}
 
 	@Override
-	public void draw(ITableRecipe recipe, IRecipeSlotsView slots, GuiGraphics gfx, double mouseX, double mouseY) {
+	public void draw(RecipeHolder<ITableRecipe> recipeHolder, IRecipeSlotsView slots, GuiGraphics gfx, double mouseX, double mouseY) {
+        var recipe = recipeHolder.value();
 		var matrix = gfx.pose();
 
 		matrix.pushPose();
 		matrix.scale(0.5F, 0.5F, 0.5F);
 
 		var shapeless = recipe instanceof ShapelessTableRecipe;
-
-		if (shapeless) this.shapeless.draw(gfx, 217, 0);
 
 		if (recipe.hasRequiredTier())
 			this.required.draw(gfx, shapeless ? 197 : 217, 0);
@@ -80,23 +77,19 @@ public class BasicTableCategory implements IRecipeCategory<ITableRecipe> {
 	}
 
 	@Override
-	public List<Component> getTooltipStrings(ITableRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+	public void getTooltip(ITooltipBuilder tooltip, RecipeHolder<ITableRecipe> recipeHolder, IRecipeSlotsView slots, double mouseX, double mouseY) {
+        var recipe = recipeHolder.value();
 		var shapeless = recipe instanceof ShapelessTableRecipe;
 		int sX = (shapeless ? 197 : 217) / 2, sY = 0;
-		int sX2 = 217 / 2;
 
-		if (shapeless && mouseX > sX2 - 1 && mouseX < sX2 + 8 && mouseY > sY - 1 && mouseY < sY + 8) {
-			return List.of(ModTooltips.SHAPELESS.color(ChatFormatting.WHITE).build());
-		}
 		if (recipe.hasRequiredTier() && mouseX > sX - 1 && mouseX < sX + 8 && mouseY > sY - 1 && mouseY < sY + 8) {
-			return List.of(ModTooltips.REQUIRES_TABLE.args(recipe.getTier()).color(ChatFormatting.WHITE).build());
+			tooltip.add(ModTooltips.REQUIRES_TABLE.args(recipe.getTier()).color(ChatFormatting.WHITE).build());
 		}
-
-		return List.of();
 	}
 
 	@Override
-	public void setRecipe(IRecipeLayoutBuilder builder, ITableRecipe recipe, IFocusGroup focuses) {
+	public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<ITableRecipe> recipeHolder, IFocusGroup focuses) {
+        var recipe = recipeHolder.value();
 		var level = Minecraft.getInstance().level;
 
 		assert level != null;

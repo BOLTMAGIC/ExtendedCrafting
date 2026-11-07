@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class FluxAlternatorScreen extends BaseContainerScreen<FluxAlternatorContainer> {
-	public static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/flux_alternator.png");
+	public static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/flux_alternator.png");
 
 	public FluxAlternatorScreen(FluxAlternatorContainer container, Inventory inventory, Component title) {
 		super(container, inventory, title, BACKGROUND, 176, 194);
@@ -36,11 +36,6 @@ public class FluxAlternatorScreen extends BaseContainerScreen<FluxAlternatorCont
 
 		gfx.drawString(this.font, title, (this.imageWidth / 2 - this.font.width(title) / 2), 6, 4210752, false);
 		gfx.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, 4210752, false);
-	}
-
-	@Override
-	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		this.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
 	}
 
 	private FluxAlternatorTileEntity getTileEntity() {

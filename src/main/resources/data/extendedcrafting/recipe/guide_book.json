@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "patchouli:guide_book"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "item": "extendedcrafting:black_iron_ingot"
+    }
+  ],
+  "result": {
+    "id": "patchouli:guide_book",
+    "components": {
+      "patchouli:book": "extendedcrafting:guide"
+    }
+  }
+}

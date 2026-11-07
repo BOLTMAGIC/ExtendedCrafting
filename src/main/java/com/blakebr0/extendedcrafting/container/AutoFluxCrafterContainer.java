@@ -4,7 +4,7 @@ import com.blakebr0.cucumber.container.BaseContainerMenu;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.cucumber.inventory.slot.OutputSlot;
 import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.tileentity.FluxCrafterTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -84,10 +84,10 @@ public class AutoFluxCrafterContainer extends BaseContainerMenu {
 	}
 
 	public static AutoFluxCrafterContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new AutoFluxCrafterContainer(ModContainerTypes.AUTO_FLUX_CRAFTER.get(), windowId, playerInventory, buffer);
+		return new AutoFluxCrafterContainer(ModMenuTypes.AUTO_FLUX_CRAFTER.get(), windowId, playerInventory, buffer);
 	}
 
 	public static AutoFluxCrafterContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new AutoFluxCrafterContainer(ModContainerTypes.AUTO_FLUX_CRAFTER.get(), windowId, playerInventory, inventory, pos);
+		return new AutoFluxCrafterContainer(ModMenuTypes.AUTO_FLUX_CRAFTER.get(), windowId, playerInventory, inventory, pos);
 	}
 }

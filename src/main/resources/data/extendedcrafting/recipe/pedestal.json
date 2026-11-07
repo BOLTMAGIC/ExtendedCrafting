@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "neoforge:conditions": [
+    {
+      "type": "cucumber:feature_flag",
+      "flag": "extendedcrafting:crafting_core"
+    }
+  ],
+  "pattern": [
+    " I ",
+    " I ",
+    "IBI"
+  ],
+  "key": {
+    "I": {
+      "item": "extendedcrafting:black_iron_ingot"
+    },
+    "B": {
+      "item": "extendedcrafting:black_iron_block"
+    }
+  },
+  "result": {
+    "id": "extendedcrafting:pedestal",
+    "count": 2
+  }
+}

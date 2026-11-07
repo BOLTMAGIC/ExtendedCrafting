@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class EpicTableScreen extends BaseContainerScreen<EpicTableContainer> {
-	public static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/epic_table.png");
+	public static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/epic_table.png");
 
 	public EpicTableScreen(EpicTableContainer container, Inventory inventory, Component title) {
 		super(container, inventory, title, BACKGROUND, 270, 314, 512, 512);
@@ -20,11 +20,6 @@ public class EpicTableScreen extends BaseContainerScreen<EpicTableContainer> {
 		var title = this.getTitle().getString();
 
 		gfx.drawString(this.font, title, 8, 6, 4210752, false);
-		gfx.drawString(this.font, this.playerInventoryTitle, 56, this.imageHeight - 94, 4210752, false);
-	}
-
-	@Override
-	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		this.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
+		gfx.drawString(this.font, this.playerInventoryTitle, 57, this.imageHeight - 94, 4210752, false);
 	}
 }

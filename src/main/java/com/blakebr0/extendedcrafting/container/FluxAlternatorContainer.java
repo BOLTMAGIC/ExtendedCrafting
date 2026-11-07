@@ -1,7 +1,7 @@
 package com.blakebr0.extendedcrafting.container;
 
 import com.blakebr0.cucumber.container.BaseContainerMenu;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -67,10 +67,10 @@ public class FluxAlternatorContainer extends BaseContainerMenu {
 	}
 
 	public static FluxAlternatorContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new FluxAlternatorContainer(ModContainerTypes.FLUX_ALTERNATOR.get(), windowId, playerInventory, buffer);
+		return new FluxAlternatorContainer(ModMenuTypes.FLUX_ALTERNATOR.get(), windowId, playerInventory, buffer);
 	}
 
 	public static FluxAlternatorContainer create(int windowId, Inventory playerInventory, BlockPos pos) {
-		return new FluxAlternatorContainer(ModContainerTypes.FLUX_ALTERNATOR.get(), windowId, playerInventory, pos);
+		return new FluxAlternatorContainer(ModMenuTypes.FLUX_ALTERNATOR.get(), windowId, playerInventory, pos);
 	}
 }

@@ -7,6 +7,7 @@ import com.blakebr0.extendedcrafting.api.crafting.ICombinationRecipe;
 import com.blakebr0.extendedcrafting.init.ModBlocks;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -18,13 +19,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 import java.awt.*;
-import java.util.List;
 
-public class CombinationCraftingCategory implements IRecipeCategory<ICombinationRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/combination_crafting.png");
-	public static final RecipeType<ICombinationRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "combination", ICombinationRecipe.class);
+public class CombinationCraftingCategory implements IRecipeCategory<RecipeHolder<ICombinationRecipe>> {
+	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/combination_crafting.png");
+	public static final RecipeType<RecipeHolder<ICombinationRecipe>> RECIPE_TYPE = RecipeType.createRecipeHolderType(ExtendedCrafting.resource("combination"));
 
 	private final IDrawable background;
 	private final IDrawable icon;
@@ -34,12 +35,12 @@ public class CombinationCraftingCategory implements IRecipeCategory<ICombination
 		this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.CRAFTING_CORE.get()));
 	}
 
-	@Override
-	public RecipeType<ICombinationRecipe> getRecipeType() {
-		return RECIPE_TYPE;
-	}
+    @Override
+    public RecipeType<RecipeHolder<ICombinationRecipe>> getRecipeType() {
+        return RECIPE_TYPE;
+    }
 
-	@Override
+    @Override
 	public Component getTitle() {
 		return Localizable.of("jei.category.extendedcrafting.combination").build();
 	}
@@ -54,24 +55,23 @@ public class CombinationCraftingCategory implements IRecipeCategory<ICombination
 		return this.icon;
 	}
 
-	@Override
-	public List<Component> getTooltipStrings(ICombinationRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+    @Override
+	public void getTooltip(ITooltipBuilder tooltip, RecipeHolder<ICombinationRecipe> recipeHolder, IRecipeSlotsView slots, double mouseX, double mouseY) {
+        var recipe = recipeHolder.value();
+
 		if (mouseX > 1 && mouseX < 14 && mouseY > 9 && mouseY < 86) {
-			return List.of(
-					Formatting.energy(recipe.getPowerCost()),
-					Formatting.energyPerTick(recipe.getPowerRate())
-			);
+			tooltip.add(Formatting.energy(recipe.getPowerCost()));
+			tooltip.add(Formatting.energyPerTick(recipe.getPowerRate()));
 		}
 
 		if (mouseX > 5 && mouseX < 23 && mouseY > 144 && mouseY < 165) {
-			return recipe.getInputsList();
+			tooltip.addAll(recipe.getInputsList());
 		}
-
-		return List.of();
 	}
 
 	@Override
-	public void setRecipe(IRecipeLayoutBuilder builder, ICombinationRecipe recipe, IFocusGroup focuses) {
+	public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<ICombinationRecipe> recipeHolder, IFocusGroup focuses) {
+        var recipe = recipeHolder.value();
 		var level = Minecraft.getInstance().level;
 
 		assert level != null;
@@ -79,16 +79,16 @@ public class CombinationCraftingCategory implements IRecipeCategory<ICombination
 		var inputs = recipe.getIngredients();
 		var output = recipe.getResultItem(level.registryAccess());
 
-		builder.addSlot(RecipeIngredientRole.INPUT, 77, 47).addIngredients(inputs.get(0));
+		builder.addSlot(RecipeIngredientRole.INPUT, 77, 47).addIngredients(recipe.getInput());
 
-		double angleBetweenEach = 360.0 / (inputs.size() - 1);
+		double angleBetweenEach = 360.0 / inputs.size();
 		Point point = new Point(53, 8), center = new Point(74, 47);
 
-		for (int i = 1; i < inputs.size(); i++) {
-			builder.addSlot(RecipeIngredientRole.INPUT, point.x, point.y).addIngredients(inputs.get(i));
+        for (var input : inputs) {
+            builder.addSlot(RecipeIngredientRole.INPUT, point.x, point.y).addIngredients(input);
 
-			point = rotatePoint(point, center, angleBetweenEach);
-		}
+            point = rotatePoint(point, center, angleBetweenEach);
+        }
 
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 77, 150).addItemStack(output);
 	}

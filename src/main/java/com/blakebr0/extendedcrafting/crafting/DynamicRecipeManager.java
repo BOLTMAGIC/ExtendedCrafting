@@ -1,5 +1,6 @@
 package com.blakebr0.extendedcrafting.crafting;
 
+import com.blakebr0.cucumber.crafting.ingredient.IngredientWithCount;
 import com.blakebr0.cucumber.event.RecipeManagerLoadingEvent;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
@@ -7,10 +8,12 @@ import com.blakebr0.extendedcrafting.crafting.recipe.CompressorRecipe;
 import com.blakebr0.extendedcrafting.singularity.Singularity;
 import com.blakebr0.extendedcrafting.singularity.SingularityRegistry;
 import com.blakebr0.extendedcrafting.singularity.SingularityUtils;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.neoforged.bus.api.SubscribeEvent;
 
 public final class DynamicRecipeManager {
     private static final DynamicRecipeManager INSTANCE = new DynamicRecipeManager();
@@ -31,7 +34,7 @@ public final class DynamicRecipeManager {
         return INSTANCE;
     }
 
-    private static CompressorRecipe makeSingularityRecipe(Singularity singularity) {
+    private static RecipeHolder<CompressorRecipe> makeSingularityRecipe(Singularity singularity) {
         if (!ModConfigs.SINGULARITY_DEFAULT_RECIPES.get())
             return null;
 
@@ -39,15 +42,13 @@ public final class DynamicRecipeManager {
         if (ingredient == Ingredient.EMPTY)
             return null;
 
-        var id = singularity.getId();
-        var recipeId = new ResourceLocation(ExtendedCrafting.MOD_ID, id.getPath() + "_singularity");
-        var output = SingularityUtils.getItemForSingularity(singularity);
+        var id = ExtendedCrafting.resource(singularity.getId().getPath() + "_singularity");
+        var result = SingularityUtils.getItemForSingularity(singularity);
         int ingredientCount = singularity.getIngredientCount();
-        var catalystId = ModConfigs.SINGULARITY_DEFAULT_CATALYST.get();
-        var catalystItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(catalystId));
+        var catalystItem = BuiltInRegistries.ITEM.get(ResourceLocation.parse(ModConfigs.SINGULARITY_DEFAULT_CATALYST.get()));
         var catalyst = Ingredient.of(catalystItem);
         int powerRequired = ModConfigs.SINGULARITY_POWER_REQUIRED.get();
 
-        return new CompressorRecipe(recipeId, ingredient, output, ingredientCount, catalyst, powerRequired);
+        return new RecipeHolder<>(id, new CompressorRecipe(NonNullList.of(IngredientWithCount.EMPTY, new IngredientWithCount(ingredient.getValues()[0], ingredientCount)), result, catalyst, powerRequired, ModConfigs.COMPRESSOR_POWER_RATE.get()));
     }
 }

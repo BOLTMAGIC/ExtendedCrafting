@@ -1,7 +1,7 @@
 package com.blakebr0.extendedcrafting.container.inventory;
 
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import net.minecraft.world.entity.player.Player;
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -67,17 +67,14 @@ public class ExtendedCraftingInventory extends TransientCraftingContainer {
     }
 
     @Override
-    public void setChanged() { }
-
-    @Override
-    public boolean stillValid(Player player) {
-        return true;
-    }
-
-    @Override
     public void clearContent() {
         for (int i = 0; i < this.getContainerSize(); i++) {
             this.inventory.setStackInSlot(i, ItemStack.EMPTY);
         }
+    }
+
+    public TableCraftingInput asCraftInput() {
+        var tier = Math.floorDiv(this.getWidth(), 2);
+        return TableCraftingInput.of(this.getWidth(), this.getHeight(), this.inventory.getStacks(), tier);
     }
 }

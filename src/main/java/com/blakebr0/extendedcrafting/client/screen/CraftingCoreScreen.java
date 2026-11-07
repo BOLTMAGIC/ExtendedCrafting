@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContainer> {
-	private static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/crafting_core.png");
+	private static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/crafting_core.png");
 	private CraftingCoreTileEntity tile;
 
 	public CraftingCoreScreen(CraftingCoreContainer container, Inventory inventory, Component title) {
@@ -28,7 +28,7 @@ public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContaine
 		this.tile = this.getTileEntity();
 
 		if (this.tile != null) {
-			this.addRenderableWidget(new EnergyBarWidget(x + 7, y + 17, tile.getEnergy()));
+			this.addRenderableWidget(new EnergyBarWidget(x + 7, y + 17, this.tile.getEnergy()));
 		}
 	}
 
@@ -39,12 +39,18 @@ public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContaine
 
 		super.render(gfx, mouseX, mouseY, partialTicks);
 
+		// this ensures that the current recipe is always updated
+		if (this.tile != null) {
+			this.tile.getActiveRecipe();
+		}
+
 		var isHoldingItem = !this.menu.getCarried().isEmpty() || this.isDragging();
 
 		if (!isHoldingItem && isHoveringSlot(x + 148, y + 47, mouseX, mouseY)) {
 			var output = this.getRecipeOutput();
-
-			gfx.renderTooltip(this.font, output, mouseX, mouseY);
+			if (!output.isEmpty()) {
+				gfx.renderTooltip(this.font, output, mouseX, mouseY);
+			}
 		}
 	}
 
@@ -78,7 +84,7 @@ public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContaine
 
 	@Override
 	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		super.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
+		super.renderBg(gfx, partialTicks, mouseX, mouseY);
 
 		int x = this.getGuiLeft();
 		int y = this.getGuiTop();
@@ -141,13 +147,6 @@ public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContaine
 			return 0;
 
 		return this.tile.getEnergy().getEnergyStored();
-	}
-
-	private int getMaxEnergyStored() {
-		if (this.tile == null)
-			return 0;
-
-		return this.tile.getEnergy().getMaxEnergyStored();
 	}
 
 	private int getEnergyRequired() {

@@ -1,7 +1,23 @@
 package com.blakebr0.extendedcrafting.compat;
 
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
-import com.blakebr0.extendedcrafting.block.*;
+import com.blakebr0.extendedcrafting.block.AdvancedAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.AdvancedTableBlock;
+import com.blakebr0.extendedcrafting.block.AutoEnderCrafterBlock;
+import com.blakebr0.extendedcrafting.block.BasicAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.BasicTableBlock;
+import com.blakebr0.extendedcrafting.block.CompressorBlock;
+import com.blakebr0.extendedcrafting.block.CraftingCoreBlock;
+import com.blakebr0.extendedcrafting.block.EliteAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.EliteTableBlock;
+import com.blakebr0.extendedcrafting.block.EnderCrafterBlock;
+import com.blakebr0.extendedcrafting.block.EpicAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.EpicTableBlock;
+import com.blakebr0.extendedcrafting.block.LegendaryAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.LegendaryTableBlock;
+import com.blakebr0.extendedcrafting.block.FluxCrafterBlock;
+import com.blakebr0.extendedcrafting.block.UltimateAutoTableBlock;
+import com.blakebr0.extendedcrafting.block.UltimateTableBlock;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.CompressorTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.CraftingCoreTileEntity;
@@ -18,23 +34,23 @@ import snownee.jade.api.config.IPluginConfig;
 
 @WailaPlugin
 public class JadeCompat implements IWailaPlugin {
-    private static final ResourceLocation CRAFTING_CORE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID + ":crafting_core");
-	private static final ResourceLocation BASIC_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "basic_table");
-	private static final ResourceLocation ADVANCED_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "advanced_table");
-	private static final ResourceLocation ELITE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_table");
-	private static final ResourceLocation ULTIMATE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ultimate_table");
-	private static final ResourceLocation EPIC_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "epic_table");
-    private static final ResourceLocation LEGENDARY_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "legendary_table");
-	private static final ResourceLocation BASIC_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "basic_auto_table");
-	private static final ResourceLocation ADVANCED_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "advanced_auto_table");
-	private static final ResourceLocation ELITE_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_auto_table");
-	private static final ResourceLocation ULTIMATE_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ultimate_auto_table");
-	private static final ResourceLocation EPIC_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "epic_auto_table");
-    private static final ResourceLocation LEGENDARY_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "legendary_auto_table");
-	private static final ResourceLocation ENDER_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ender_crafter");
-	private static final ResourceLocation AUTO_ENDER_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "auto_ender_crafter");
-	private static final ResourceLocation FLUX_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "flux_crafter");
-	private static final ResourceLocation COMPRESSOR_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "compressor");
+	private static final ResourceLocation CRAFTING_CORE_PROVIDER = ExtendedCrafting.resource("crafting_core");
+	private static final ResourceLocation BASIC_TABLE_PROVIDER = ExtendedCrafting.resource("basic_table");
+	private static final ResourceLocation ADVANCED_TABLE_PROVIDER = ExtendedCrafting.resource("advanced_table");
+	private static final ResourceLocation ELITE_TABLE_PROVIDER = ExtendedCrafting.resource("elite_table");
+	private static final ResourceLocation ULTIMATE_TABLE_PROVIDER = ExtendedCrafting.resource("ultimate_table");
+	private static final ResourceLocation EPIC_TABLE_PROVIDER = ExtendedCrafting.resource("epic_table");
+	private static final ResourceLocation LEGENDARY_TABLE_PROVIDER = ExtendedCrafting.resource("legendary_table");
+	private static final ResourceLocation BASIC_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("basic_auto_table");
+	private static final ResourceLocation ADVANCED_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("advanced_auto_table");
+	private static final ResourceLocation ELITE_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("elite_auto_table");
+	private static final ResourceLocation ULTIMATE_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("ultimate_auto_table");
+	private static final ResourceLocation EPIC_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("epic_auto_table");
+	private static final ResourceLocation LEGENDARY_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("legendary_auto_table");
+	private static final ResourceLocation ENDER_CRAFTER_PROVIDER = ExtendedCrafting.resource("ender_crafter");
+	private static final ResourceLocation AUTO_ENDER_CRAFTER_PROVIDER = ExtendedCrafting.resource("auto_ender_crafter");
+	private static final ResourceLocation FLUX_CRAFTER_PROVIDER = ExtendedCrafting.resource("flux_crafter");
+	private static final ResourceLocation COMPRESSOR_PROVIDER = ExtendedCrafting.resource("compressor");
 
 
 	@Override
@@ -119,19 +135,19 @@ public class JadeCompat implements IWailaPlugin {
 			}
 		}, EpicTableBlock.class);
 
-        registration.registerBlockComponent(new IBlockComponentProvider() {
-            @Override
-            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-                tooltip.add(ModTooltips.TIER.args(6).build());
-            }
+		registration.registerBlockComponent(new IBlockComponentProvider() {
+			@Override
+			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+				tooltip.add(ModTooltips.TIER.args(6).build());
+			}
 
-            @Override
-            public ResourceLocation getUid() {
-                return LEGENDARY_TABLE_PROVIDER;
-            }
-        }, LegendaryTableBlock.class);
+			@Override
+			public ResourceLocation getUid() {
+				return LEGENDARY_TABLE_PROVIDER;
+			}
+		}, LegendaryTableBlock.class);
 
-        registration.registerBlockComponent(new IBlockComponentProvider() {
+		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override
 			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
 				tooltip.add(ModTooltips.TIER.args(1).build());
@@ -191,17 +207,17 @@ public class JadeCompat implements IWailaPlugin {
 			}
 		}, EpicAutoTableBlock.class);
 
-        registration.registerBlockComponent(new IBlockComponentProvider() {
-            @Override
-            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-                tooltip.add(ModTooltips.TIER.args(6).build());
-            }
+		registration.registerBlockComponent(new IBlockComponentProvider() {
+			@Override
+			public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+				tooltip.add(ModTooltips.TIER.args(6).build());
+			}
 
-            @Override
-            public ResourceLocation getUid() {
-                return LEGENDARY_AUTO_TABLE_PROVIDER;
-            }
-        }, LegendaryAutoTableBlock.class);
+			@Override
+			public ResourceLocation getUid() {
+				return LEGENDARY_AUTO_TABLE_PROVIDER;
+			}
+		}, LegendaryAutoTableBlock.class);
 
 		registration.registerBlockComponent(new IBlockComponentProvider() {
 			@Override

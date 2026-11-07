@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "extendedcrafting:crystaltine_block"
+    }
+  ],
+  "result": {
+    "id": "extendedcrafting:crystaltine_ingot",
+    "count": 9
+  }
+}

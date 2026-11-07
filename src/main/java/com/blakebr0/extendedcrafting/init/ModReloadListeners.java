@@ -3,9 +3,9 @@ package com.blakebr0.extendedcrafting.init;
 import com.blakebr0.extendedcrafting.util.IngredientListCache;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 
 public final class ModReloadListeners implements ResourceManagerReloadListener {
     @Override

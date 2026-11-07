@@ -5,7 +5,7 @@ import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.cucumber.inventory.slot.BaseItemStackHandlerSlot;
 import com.blakebr0.cucumber.inventory.slot.OutputSlot;
 import com.blakebr0.extendedcrafting.container.slot.CatalystSlot;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.tileentity.CompressorTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -86,10 +86,10 @@ public class CompressorContainer extends BaseContainerMenu {
 	}
 
 	public static CompressorContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new CompressorContainer(ModContainerTypes.COMPRESSOR.get(), windowId, playerInventory, buffer);
+		return new CompressorContainer(ModMenuTypes.COMPRESSOR.get(), windowId, playerInventory, buffer);
 	}
 
 	public static CompressorContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new CompressorContainer(ModContainerTypes.COMPRESSOR.get(), windowId, playerInventory, inventory, pos);
+		return new CompressorContainer(ModMenuTypes.COMPRESSOR.get(), windowId, playerInventory, inventory, pos);
 	}
 }

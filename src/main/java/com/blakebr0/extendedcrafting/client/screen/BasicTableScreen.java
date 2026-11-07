@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class BasicTableScreen extends BaseContainerScreen<BasicTableContainer> {
-	public static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/basic_table.png");
+	public static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/basic_table.png");
 
 	public BasicTableScreen(BasicTableContainer container, Inventory inventory, Component title) {
 		super(container, inventory, title, BACKGROUND, 176, 170);
@@ -21,10 +21,5 @@ public class BasicTableScreen extends BaseContainerScreen<BasicTableContainer> {
 
 		gfx.drawString(this.font, title, 32, 6, 4210752, false);
 		gfx.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, 4210752, false);
-	}
-
-	@Override
-	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		this.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
 	}
 }

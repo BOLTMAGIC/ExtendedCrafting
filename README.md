@@ -1,23 +1,49 @@
-# Extended Crafting: Expanded Reforked
+# Extended Crafting
+
+<p align="left">
+    <a href="https://blakesmods.com/extended-crafting" alt="Downloads">
+        <img src="https://img.shields.io/endpoint?url=https://api.blakesmods.com/v2/badges/extendedcrafting/downloads&style=for-the-badge" />
+    </a>
+    <a href="https://blakesmods.com/extended-crafting" alt="Latest Version">
+        <img src="https://img.shields.io/endpoint?url=https://api.blakesmods.com/v2/badges/extendedcrafting/version&style=for-the-badge" />
+    </a>
+    <a href="https://blakesmods.com/extended-crafting" alt="Minecraft Version">
+        <img src="https://img.shields.io/endpoint?url=https://api.blakesmods.com/v2/badges/extendedcrafting/mc_version&style=for-the-badge" />
+    </a>
+    <a href="https://blakesmods.com/docs/extendedcrafting" alt="Docs">
+        <img src="https://img.shields.io/static/v1?label=docs&message=view&color=brightgreen&style=for-the-badge" />
+    </a>
+    <a href="https://blakesmods.com/wiki/extendedcrafting" alt="Wiki">
+        <img src="https://img.shields.io/static/v1?label=wiki&message=view&color=brightgreen&style=for-the-badge" />
+    </a>
+</p>
 
 Adds some new ways to craft items, as well as extra crafting items and utilities.
-Originally forked for use in Monifactory. "What if we tried more tables?
-
-And forked again because 11x11 is still not enough for my modpack.
 
 ## Download
-- [ExtendedCrafting: Expanded Plus (Curseforge)]()
-- [ExtendedCrafting: Monifactory Edition (Curseforge)](https://www.curseforge.com/minecraft/mc-mods/extended-crafting-monifactory-edition)
-- [BlakeBr0's Cucumber Library (required dependency)](https://www.curseforge.com/minecraft/mc-mods/cucumber)
 
-- [Original mod at Blake's Mods](https://blakesmods.com/extended-crafting/download)
+The official release builds can be downloaded from the following websites.
 
-## What has changed from the original
+- [Blake's Mods](https://blakesmods.com/extended-crafting/download)
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/extended-crafting)
+- [Modrinth](https://modrinth.com/mod/extended-crafting)
 
-- Added a new tier of table with a 13x13 grid
-- Auto Table Speed is now configurable per tier (default to 8gt/0.4s per craft)
-- Auto Table item input logic reworked to allow the table to keep up, can now import more than one item per tick.
-- JEI Compatibility: Recipes with no tier restriction are only shown in the smallest table that can fit them. Tier-restricted recipes still show the warning icon. [TODO: Make this a config option]
+## Development
+
+To use this mod in a development environment, you will need to add the following to your `build.gradle`.
+
+```groovy
+repositories {
+    maven {
+        url 'https://maven.blakesmods.com'
+    }
+}
+
+dependencies {
+    implementation 'com.blakebr0.cucumber:Cucumber:<minecraft_version>-<mod_version>'
+    implementation 'com.blakebr0.extendedcrafting:ExtendedCrafting:<minecraft_version>-<mod_version>'
+}
+```
 
 ## License
 

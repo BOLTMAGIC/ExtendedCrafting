@@ -2,7 +2,7 @@ package com.blakebr0.extendedcrafting.lib;
 
 import com.blakebr0.cucumber.util.Tooltip;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
 
 public final class ModTooltips {
     public static final Tooltip EMPTY = new Tooltip("tooltip.extendedcrafting.empty");
@@ -21,7 +21,6 @@ public final class ModTooltips {
     public static final Tooltip TICKS = new Tooltip("tooltip.extendedcrafting.ticks");
     public static final Tooltip SECONDS = new Tooltip("tooltip.extendedcrafting.seconds");
     public static final Tooltip REQUIRES_TABLE = new Tooltip("tooltip.extendedcrafting.requires_table");
-    public static final Tooltip SHAPELESS = new Tooltip("tooltip.extendedcrafting.shapeless");
     public static final Tooltip ITEMS_REQUIRED = new Tooltip("tooltip.extendedcrafting.items_required");
     public static final Tooltip PER_ALTERNATOR = new Tooltip("tooltip.extendedcrafting.per_alternator");
     public static final Tooltip RECIPE_COUNT = new Tooltip("tooltip.extendedcrafting.recipe_count");

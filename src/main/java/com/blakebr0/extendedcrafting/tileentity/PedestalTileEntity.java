@@ -1,6 +1,7 @@
 package com.blakebr0.extendedcrafting.tileentity;
 
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import net.minecraft.core.BlockPos;
@@ -11,7 +12,7 @@ public class PedestalTileEntity extends BaseInventoryTileEntity {
 
 	public PedestalTileEntity(BlockPos pos, BlockState state) {
 		super(ModTileEntities.PEDESTAL.get(), pos, state);
-		this.inventory = createInventoryHandler(this::setChangedAndDispatch);
+		this.inventory = createInventoryHandler((slot) -> this.setChangedAndDispatch());
 	}
 
 	@Override
@@ -19,7 +20,7 @@ public class PedestalTileEntity extends BaseInventoryTileEntity {
 		return this.inventory;
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
 		return BaseItemStackHandler.create(1, onContentsChanged, builder -> {
 			builder.setDefaultSlotLimit(1);
 		});
