@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "extendedcrafting:the_ultimate_block"
+    }
+  ],
+  "result": {
+    "id": "extendedcrafting:the_ultimate_ingot",
+    "count": 9
+  }
+}

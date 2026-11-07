@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8.7",
+  "package": "com.blakebr0.extendedcrafting.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ServerboundContainerClickPacketMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

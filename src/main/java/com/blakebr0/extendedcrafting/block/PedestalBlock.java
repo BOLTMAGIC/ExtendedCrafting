@@ -1,6 +1,7 @@
 package com.blakebr0.extendedcrafting.block;
 
 import com.blakebr0.cucumber.block.BaseTileEntityBlock;
+import com.blakebr0.cucumber.helper.BlockHelper;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.util.VoxelShapeBuilder;
 import com.blakebr0.extendedcrafting.tileentity.PedestalTileEntity;
@@ -9,7 +10,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +40,7 @@ public class PedestalBlock extends BaseTileEntityBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		var tile = level.getBlockEntity(pos);
 
 		if (tile instanceof PedestalTileEntity pedestal) {
@@ -60,7 +61,7 @@ public class PedestalBlock extends BaseTileEntityBlock {
 			}
 		}
 
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	@Override
@@ -79,5 +80,15 @@ public class PedestalBlock extends BaseTileEntityBlock {
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return PEDESTAL_SHAPE;
+	}
+
+	@Override
+	protected boolean hasAnalogOutputSignal(BlockState state) {
+		return true;
+	}
+
+	@Override
+	protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+		return BlockHelper.getRedstoneSignalFromInventory(level.getBlockEntity(pos));
 	}
 }

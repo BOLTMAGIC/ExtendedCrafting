@@ -1,11 +1,10 @@
 package com.blakebr0.extendedcrafting.compat.crafttweaker;
 
-import com.blamejared.crafttweaker.api.data.MapData;
-import com.blamejared.crafttweaker.api.data.visitor.DataToTextComponentVisitor;
-import net.minecraft.nbt.CompoundTag;
+import com.blamejared.crafttweaker.api.util.ItemStackUtil;
+import net.minecraft.world.item.ItemStack;
 
 public final class CraftTweakerUtils {
-	public static String writeTag(CompoundTag tag) {
-        return (new MapData(tag).accept(new DataToTextComponentVisitor("", 0)).getString());
+	public static String getItemStackString(ItemStack stack) {
+		return ItemStackUtil.getCommandString(stack);
 	}
 }

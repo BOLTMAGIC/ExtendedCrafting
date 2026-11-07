@@ -4,6 +4,7 @@ import com.blakebr0.cucumber.energy.BaseEnergyStorage;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.cucumber.inventory.CachedRecipe;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.api.crafting.ICompressorRecipe;
@@ -12,7 +13,7 @@ import com.blakebr0.extendedcrafting.container.CompressorContainer;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -22,24 +23,18 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("unused")
 public class CompressorTileEntity extends BaseInventoryTileEntity implements MenuProvider {
-	private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
 	private final BaseItemStackHandler inventory;
 	private final BaseItemStackHandler recipeInventory;
 	private final BaseEnergyStorage energy;
-	private final CachedRecipe<ICompressorRecipe> recipe;
+	private final CachedRecipe<CraftingInput, ICompressorRecipe> recipe;
 	private ItemStack materialStack = ItemStack.EMPTY;
 	private List<MaterialInput> inputs = NonNullList.create();
 	private int materialCount;
@@ -49,7 +44,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 
 	public CompressorTileEntity(BlockPos pos, BlockState state) {
 		super(ModTileEntities.COMPRESSOR.get(), pos, state);
-		this.inventory = createInventoryHandler(null);
+		this.inventory = createInventoryHandler((slot) -> this.setChanged());
 		this.recipeInventory = BaseItemStackHandler.create(2);
 		this.energy = new BaseEnergyStorage(ModConfigs.COMPRESSOR_POWER_CAPACITY.get(), this::setChangedFast);
 		this.recipe = new CachedRecipe<>(ModRecipeTypes.COMPRESSOR.get());
@@ -61,47 +56,38 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.loadAdditional(tag, lookup);
 		this.materialCount = tag.getInt("MaterialCount");
-		this.materialStack = ItemStack.of(tag.getCompound("MaterialStack"));
+		this.materialStack = ItemStack.parseOptional(lookup, tag.getCompound("MaterialStack"));
 		this.progress = tag.getInt("Progress");
 		this.ejecting = tag.getBoolean("Ejecting");
-		this.energy.deserializeNBT(tag.get("Energy"));
+		this.energy.deserializeNBT(lookup, tag.get("Energy"));
 		this.inputLimit = tag.getBoolean("InputLimit");
 
-		this.inputs = loadMaterialInputs(tag);
+		this.inputs = loadMaterialInputs(lookup, tag);
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.saveAdditional(tag, lookup);
 		tag.putInt("MaterialCount", this.materialCount);
-		tag.put("MaterialStack", this.materialStack.serializeNBT());
+		tag.put("MaterialStack", this.materialStack.saveOptional(lookup));
 		tag.putInt("Progress", this.progress);
 		tag.putBoolean("Ejecting", this.ejecting);
 		tag.putInt("Energy", this.energy.getEnergyStored());
 		tag.putBoolean("InputLimit", this.inputLimit);
 
-		saveMaterialInputs(tag, this.inputs);
+		saveMaterialInputs(lookup, tag, this.inputs);
 	}
 
 	@Override
-	public <T> @NotNull LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-		if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
-			return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
-		}
-
-		return super.getCapability(cap, side);
-	}
-
-	@Override
-	public @NotNull Component getDisplayName() {
+	public Component getDisplayName() {
 		return Localizable.of("container.extendedcrafting.compressor").build();
 	}
 
 	@Override
-	public AbstractContainerMenu createMenu(int windowId, @NotNull Inventory playerInventory, @NotNull Player playerEntity) {
+	public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player playerEntity) {
 		return CompressorContainer.create(windowId, playerInventory, this.inventory, this.getBlockPos());
 	}
 
@@ -116,7 +102,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 				tile.setChangedFast();
 			}
 
-			if (!tile.inputLimit || (recipe != null && tile.materialCount < recipe.getInputCount())) {
+			if (!tile.inputLimit || (recipe != null && tile.materialCount < recipe.getCount(0))) {
 				var index = tile.canInsertItem(input);
 				if (index > -1) {
 					tile.insertItem(index, input);
@@ -126,16 +112,16 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		}
 
 		if (recipe != null && tile.getEnergy().getEnergyStored() > 0) {
-			if (tile.materialCount >= recipe.getInputCount()) {
+			if (tile.materialCount >= recipe.getCount(0)) {
 				if (tile.progress >= recipe.getPowerCost()) {
-					var result = recipe.assemble(tile.recipeInventory.asRecipeWrapper(), level.registryAccess());
+					var result = recipe.assemble(tile.toCraftingInput(), level.registryAccess());
 
 					if (StackHelper.canCombineStacks(result, output)) {
 						tile.updateResult(result);
 						tile.progress = 0;
-						tile.materialCount -= recipe.getInputCount();
+						tile.materialCount -= recipe.getCount(0);
 
-						tile.consumeInputs(recipe.getInputCount());
+						tile.consumeInputs(recipe.getCount(0));
 
 						if (tile.materialCount <= 0) {
 							tile.materialStack = ItemStack.EMPTY;
@@ -166,7 +152,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 					newestInput.count -= addCount;
 
 					if (newestInput.count <= 0) {
-						tile.inputs.remove(tile.inputs.size() - 1);
+						tile.inputs.removeLast();
 					}
 
 					if (tile.materialCount < 1) {
@@ -189,7 +175,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		return createInventoryHandler(null);
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
 		return BaseItemStackHandler.create(3, onContentsChanged, builder -> {
 			builder.setOutputSlots(0);
 			builder.setCanInsert((slot, stack) -> slot == 1);
@@ -249,7 +235,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		this.recipeInventory.setStackInSlot(0, this.materialStack);
 		this.recipeInventory.setStackInSlot(1, catalyst);
 
-		return this.recipe.checkAndGet(this.recipeInventory, this.level);
+		return this.recipe.checkAndGet(this.toCraftingInput(), this.level);
 	}
 
 	public int getEnergyRequired() {
@@ -261,7 +247,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 
 	public int getMaterialsRequired() {
 		if (this.hasRecipe())
-			return this.recipe.get().getInputCount();
+			return this.recipe.get().getCount(0);
 
 		return 0;
 	}
@@ -303,7 +289,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 
 		// if there's a valid recipe, we can start allowing item variants
 		if (size < 100 && this.recipe.exists()) {
-			var recipeStack = this.recipe.get().getIngredients().get(0);
+			var recipeStack = this.recipe.get().getIngredients().getFirst();
 			if (recipeStack.test(stack))
 				return size;
 		}
@@ -314,7 +300,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 	private void insertItem(int index, ItemStack stack) {
 		int consumeAmount = stack.getCount();
 		if (this.inputLimit) {
-			consumeAmount = Math.min(consumeAmount, this.recipe.get().getInputCount() - this.materialCount);
+			consumeAmount = Math.min(consumeAmount, this.recipe.get().getCount(0) - this.materialCount);
 		}
 
 		if (this.inputs.isEmpty() || this.inputs.size() == index) {
@@ -335,7 +321,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 	}
 
 	private MaterialInput getNewestInput() {
-		return this.inputs.get(this.inputs.size() - 1);
+		return this.inputs.getLast();
 	}
 
 	private void consumeInputs(int amount) {
@@ -351,18 +337,22 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		}
 	}
 
-	private static List<MaterialInput> loadMaterialInputs(CompoundTag tag) {
+	private CraftingInput toCraftingInput() {
+		return this.recipeInventory.toShapelessCraftingInput();
+	}
+
+	private static List<MaterialInput> loadMaterialInputs(HolderLookup.Provider lookup, CompoundTag tag) {
 		var list = tag.getList("Inputs", 10);
 		var inputs = new ArrayList<MaterialInput>();
 
 		for (int i = 0; i < list.size(); i++) {
-			inputs.add(MaterialInput.load(list.getCompound(i)));
+			inputs.add(MaterialInput.load(lookup, list.getCompound(i)));
 		}
 
 		// backwards compatibility
 		// if there is a material stack set but no inputs then we add it as an input
 		if (tag.contains("MaterialStack") && inputs.isEmpty()) {
-			var stack = ItemStack.of(tag.getCompound("MaterialStack"));
+			var stack = ItemStack.parseOptional(lookup, tag.getCompound("MaterialStack"));
 			var count = tag.getInt("MaterialCount");
 
 			if (count > 0) {
@@ -373,10 +363,10 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		return inputs;
 	}
 
-	private static void saveMaterialInputs(CompoundTag tag, List<MaterialInput> inputs) {
+	private static void saveMaterialInputs(HolderLookup.Provider lookup, CompoundTag tag, List<MaterialInput> inputs) {
 		var list = new ListTag();
 		for (var input : inputs) {
-			list.add(input.save());
+			list.add(input.save(lookup));
 		}
 
 		tag.put("Inputs", list);
@@ -395,17 +385,17 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 			return Component.literal(this.count + "x ").append(this.stack.getHoverName());
 		}
 
-		public CompoundTag save() {
+		public CompoundTag save(HolderLookup.Provider lookup) {
 			var tag = new CompoundTag();
 
-			tag.put("Item", stack.save(new CompoundTag()));
+			tag.put("Item", stack.save(lookup));
 			tag.putInt("Count", count);
 
 			return tag;
 		}
 
-		public static MaterialInput load(CompoundTag tag) {
-			var stack = ItemStack.of(tag.getCompound("Item"));
+		public static MaterialInput load(HolderLookup.Provider lookup, CompoundTag tag) {
+			var stack = ItemStack.parseOptional(lookup, tag.getCompound("Item"));
 			var count = tag.getInt("Count");
 
 			return new MaterialInput(stack, count);

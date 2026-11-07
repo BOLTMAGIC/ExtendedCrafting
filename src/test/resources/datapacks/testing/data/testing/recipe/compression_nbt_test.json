@@ -1,0 +1,14 @@
+{
+  "type": "extendedcrafting:compressor",
+  "power_cost": 500000,
+  "ingredient": {
+    "item": "extendedcrafting:recipe_maker",
+    "count": 10000
+  },
+  "catalyst": {
+    "item": "extendedcrafting:ender_catalyst"
+  },
+  "result": {
+    "id": "minecraft:redstone"
+  }
+}

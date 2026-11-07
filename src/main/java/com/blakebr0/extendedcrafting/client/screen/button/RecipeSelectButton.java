@@ -3,15 +3,15 @@ package com.blakebr0.extendedcrafting.client.screen.button;
 import com.blakebr0.cucumber.client.screen.button.IconButton;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
-import com.blakebr0.extendedcrafting.network.NetworkHandler;
-import com.blakebr0.extendedcrafting.network.message.SaveRecipeMessage;
-import com.blakebr0.extendedcrafting.network.message.SelectRecipeMessage;
+import com.blakebr0.extendedcrafting.network.payload.SaveRecipePayload;
+import com.blakebr0.extendedcrafting.network.payload.SelectRecipePayload;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class RecipeSelectButton extends IconButton {
-    private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/widgets.png");
+    private static final ResourceLocation WIDGETS_LOCATION = ExtendedCrafting.resource("textures/gui/widgets.png");
 
     private final int index;
     private final TableRecipeStorage recipeStorage;
@@ -41,9 +41,9 @@ public class RecipeSelectButton extends IconButton {
 
     private static void onPress(BlockPos pos, int index) {
         if (Screen.hasShiftDown()) {
-            NetworkHandler.INSTANCE.sendToServer(new SaveRecipeMessage(pos, index));
+            PacketDistributor.sendToServer(new SaveRecipePayload(pos, index));
         } else {
-            NetworkHandler.INSTANCE.sendToServer(new SelectRecipeMessage(pos, index));
+            PacketDistributor.sendToServer(new SelectRecipePayload(pos, index));
         }
     }
 }

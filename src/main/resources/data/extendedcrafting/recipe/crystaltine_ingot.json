@@ -1,0 +1,30 @@
+{
+  "type": "extendedcrafting:shaped_table",
+  "pattern": [
+    "DLLLLLD",
+    "DGINIGD",
+    "DGINIGD",
+    "DLLLLLD"
+  ],
+  "key": {
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "L": {
+      "tag": "c:gems/lapis"
+    },
+    "N": {
+      "item": "minecraft:nether_star"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
+    }
+  },
+  "result": {
+    "id": "extendedcrafting:crystaltine_ingot",
+    "count": 4
+  }
+}

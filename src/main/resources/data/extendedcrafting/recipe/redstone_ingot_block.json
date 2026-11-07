@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "extendedcrafting:redstone_ingot"
+    }
+  },
+  "result": {
+    "id": "extendedcrafting:redstone_ingot_block"
+  }
+}

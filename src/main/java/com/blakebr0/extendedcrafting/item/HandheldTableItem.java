@@ -19,22 +19,20 @@ public class HandheldTableItem extends BaseItem {
 	}
 
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-		if (!world.isClientSide()) {
-			player.openMenu(this.getContainer(world, player.blockPosition()));
+	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+		if (!level.isClientSide()) {
+			player.openMenu(this.getContainer(level, player.blockPosition()));
 		}
 
-		return super.use(world, player, hand);
+		return super.use(level, player, hand);
 	}
 
-	private MenuProvider getContainer(Level world, BlockPos pos) {
-		return new SimpleMenuProvider((windowId, playerInventory, playerEntity) -> {
-			return new CraftingMenu(windowId, playerInventory, ContainerLevelAccess.create(world, pos)) {
-				@Override
-				public boolean stillValid(Player player) {
-					return true;
-				}
-			};
-		}, Localizable.of("container.crafting").build());
+	private MenuProvider getContainer(Level level, BlockPos pos) {
+		return new SimpleMenuProvider((windowId, playerInventory, playerEntity) -> new CraftingMenu(windowId, playerInventory, ContainerLevelAccess.create(level, pos)) {
+            @Override
+            public boolean stillValid(Player player) {
+                return true;
+            }
+        }, Localizable.of("container.crafting").build());
 	}
 }

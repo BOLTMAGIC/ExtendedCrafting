@@ -1,28 +1,25 @@
 package com.blakebr0.extendedcrafting.tileentity;
 
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.container.BasicTableContainer;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
 
 public class BasicTableTileEntity extends BaseInventoryTileEntity implements MenuProvider {
 	private final BaseItemStackHandler inventory;
 
 	public BasicTableTileEntity(BlockPos pos, BlockState state) {
 		super(ModTileEntities.BASIC_TABLE.get(), pos, state);
-		this.inventory = createInventoryHandler(this::setChangedAndDispatch);
+		this.inventory = createInventoryHandler((slot) -> this.setChangedAndDispatch());
 	}
 
 	@Override
@@ -40,16 +37,11 @@ public class BasicTableTileEntity extends BaseInventoryTileEntity implements Men
 		return BasicTableContainer.create(windowId, playerInventory, this.inventory, this.getBlockPos());
 	}
 
-	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-		return !this.remove && cap == ForgeCapabilities.ITEM_HANDLER ? LazyOptional.empty() : super.getCapability(cap, side);
-	}
-
 	public static BaseItemStackHandler createInventoryHandler() {
 		return createInventoryHandler(null);
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
-		return BaseItemStackHandler.create(9, onContentsChanged);
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
+		return BaseItemStackHandler.create(9, onContentsChanged, builder -> {});
 	}
 }

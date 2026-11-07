@@ -3,20 +3,18 @@ package com.blakebr0.extendedcrafting.singularity;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.crafting.recipe.UltimateSingularityRecipe;
 import com.blakebr0.extendedcrafting.lib.ModSingularities;
-import com.blakebr0.extendedcrafting.network.NetworkHandler;
-import com.blakebr0.extendedcrafting.network.message.SyncSingularitiesMessage;
+import com.blakebr0.extendedcrafting.network.payload.SyncSingularitiesPayload;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
@@ -26,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +38,13 @@ public final class SingularityRegistry {
 
     @SubscribeEvent
     public void onDatapackSync(OnDatapackSyncEvent event) {
-        var message = new SyncSingularitiesMessage(this.getSingularities());
+        var payload = new SyncSingularitiesPayload(this.getSingularities());
         var player = event.getPlayer();
 
         if (player != null) {
-            NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), message);
+            PacketDistributor.sendToPlayer(player, payload);
         } else {
-            NetworkHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), message);
+            PacketDistributor.sendToAllPlayers(payload);
         }
     }
 
@@ -62,6 +59,8 @@ public final class SingularityRegistry {
         if (!dir.mkdirs() && dir.isDirectory()) {
             this.loadFiles(dir);
         }
+        
+        UltimateSingularityRecipe.invalidate();
 
         stopwatch.stop();
 
@@ -99,30 +98,8 @@ public final class SingularityRegistry {
         return this.singularities.get(id);
     }
 
-    public void writeToBuffer(FriendlyByteBuf buffer) {
-        buffer.writeVarInt(this.singularities.size());
-
-        this.singularities.forEach((id, singularity) -> {
-            singularity.write(buffer);
-        });
-    }
-
-    public List<Singularity> readFromBuffer(FriendlyByteBuf buffer) {
-        List<Singularity> singularities = new ArrayList<>();
-
-        int size = buffer.readVarInt();
-
-        for (int i = 0; i < size; i++) {
-            var singularity = Singularity.read(buffer);
-
-            singularities.add(singularity);
-        }
-
-        return singularities;
-    }
-
-    public void loadSingularities(SyncSingularitiesMessage message) {
-        var singularities = message.getSingularities()
+    public void loadSingularities(SyncSingularitiesPayload payload) {
+        var singularities = payload.singularities()
                 .stream()
                 .collect(Collectors.toMap(Singularity::getId, s -> s));
 
@@ -145,12 +122,11 @@ public final class SingularityRegistry {
             Singularity singularity = null;
 
             try {
-                var parser = new JsonParser();
                 reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
                 var name = file.getName().replace(".json", "");
-                json = parser.parse(reader).getAsJsonObject();
+                json = JsonParser.parseReader(reader).getAsJsonObject();
 
-                singularity = SingularityUtils.loadFromJson(new ResourceLocation(ExtendedCrafting.MOD_ID, name), json);
+                singularity = SingularityUtils.loadFromJson(ExtendedCrafting.resource(name), json);
 
                 reader.close();
             } catch (Exception e) {

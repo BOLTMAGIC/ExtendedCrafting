@@ -4,8 +4,8 @@ import com.blakebr0.cucumber.helper.ColorHelper;
 import com.blakebr0.cucumber.iface.IColored;
 import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.init.ModItems;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 
 public final class ColorHandler {
     @SubscribeEvent

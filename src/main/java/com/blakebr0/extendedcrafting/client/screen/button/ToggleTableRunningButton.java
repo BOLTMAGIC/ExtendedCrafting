@@ -2,9 +2,9 @@ package com.blakebr0.extendedcrafting.client.screen.button;
 
 import com.blakebr0.cucumber.client.screen.button.IconButton;
 import com.blakebr0.extendedcrafting.client.screen.BasicAutoTableScreen;
-import com.blakebr0.extendedcrafting.network.NetworkHandler;
-import com.blakebr0.extendedcrafting.network.message.RunningSwitchMessage;
+import com.blakebr0.extendedcrafting.network.payload.RunningSwitchPayload;
 import net.minecraft.core.BlockPos;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
@@ -13,7 +13,7 @@ public class ToggleTableRunningButton extends IconButton {
 
     public ToggleTableRunningButton(int x, int y, BlockPos pos, Supplier<Boolean> isRunning) {
         super(x, y, 13, 13, 194, 18, BasicAutoTableScreen.BACKGROUND, button -> {
-            NetworkHandler.INSTANCE.sendToServer(new RunningSwitchMessage(pos));
+            PacketDistributor.sendToServer(new RunningSwitchPayload(pos));
         });
 
         this.isRunning = isRunning;

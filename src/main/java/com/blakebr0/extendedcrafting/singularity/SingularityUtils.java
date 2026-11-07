@@ -1,12 +1,12 @@
 package com.blakebr0.extendedcrafting.singularity;
 
-import com.blakebr0.cucumber.helper.NBTHelper;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
+import com.blakebr0.extendedcrafting.init.ModDataComponentTypes;
 import com.blakebr0.extendedcrafting.init.ModItems;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +32,7 @@ public final class SingularityUtils {
             var tag = ing.get("tag").getAsString();
             singularity = new Singularity(id, name, new int[] { overlayColor, underlayColor }, tag, materialCount, inUltimateSingularity);
         } else {
-            var ingredient = Ingredient.fromJson(json.get("ingredient"));
+            var ingredient = Ingredient.CODEC.decode(JsonOps.INSTANCE, json.get("ingredient")).getOrThrow().getFirst();
             singularity = new Singularity(id, name, new int[] { overlayColor, underlayColor }, ingredient, materialCount, inUltimateSingularity);
         }
 
@@ -50,8 +50,8 @@ public final class SingularityUtils {
 
         var colors = new JsonArray();
 
-        colors.add(Integer.toString(singularity.getOverlayColor(), 16));
-        colors.add(Integer.toString(singularity.getUnderlayColor(), 16));
+        colors.add(Integer.toHexString(singularity.getOverlayColor() & 0x00FFFFFF));
+        colors.add(Integer.toHexString(singularity.getUnderlayColor() & 0x00FFFFFF));
 
         json.add("colors", colors);
 
@@ -61,7 +61,7 @@ public final class SingularityUtils {
             obj.addProperty("tag", singularity.getTag());
             ingredient = obj;
         } else {
-            ingredient = singularity.getIngredient().toJson();
+            ingredient = Ingredient.CODEC.encodeStart(JsonOps.INSTANCE, singularity.getIngredient()).getOrThrow();
         }
 
         json.add("ingredient", ingredient);
@@ -73,27 +73,16 @@ public final class SingularityUtils {
         return json;
     }
 
-    public static CompoundTag makeTag(Singularity singularity) {
-        var nbt = new CompoundTag();
-
-        nbt.putString("Id", singularity.getId().toString());
-
-        return nbt;
-    }
-
     public static ItemStack getItemForSingularity(Singularity singularity) {
-        var nbt = makeTag(singularity);
         var stack = new ItemStack(ModItems.SINGULARITY.get());
-
-        stack.setTag(nbt);
-
+        stack.set(ModDataComponentTypes.SINGULARITY_ID, singularity.getId());
         return stack;
     }
 
     public static Singularity getSingularity(ItemStack stack) {
-        var id = NBTHelper.getString(stack, "Id");
-        if (!id.isEmpty()) {
-            return SingularityRegistry.getInstance().getSingularityById(ResourceLocation.tryParse(id));
+        var id = stack.get(ModDataComponentTypes.SINGULARITY_ID);
+        if (id != null) {
+            return SingularityRegistry.getInstance().getSingularityById(id);
         }
 
         return null;

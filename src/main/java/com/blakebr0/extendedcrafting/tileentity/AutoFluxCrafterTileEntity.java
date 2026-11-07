@@ -2,7 +2,6 @@ package com.blakebr0.extendedcrafting.tileentity;
 
 import com.blakebr0.cucumber.energy.BaseEnergyStorage;
 import com.blakebr0.cucumber.helper.StackHelper;
-import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.container.AutoFluxCrafterContainer;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
@@ -10,6 +9,7 @@ import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,14 +18,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
+
+import java.util.Optional;
 
 public class AutoFluxCrafterTileEntity extends FluxCrafterTileEntity implements MenuProvider {
-    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
     private final BaseEnergyStorage energy;
     private final TableRecipeStorage recipeStorage;
 
@@ -36,17 +34,17 @@ public class AutoFluxCrafterTileEntity extends FluxCrafterTileEntity implements 
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.put("Energy", this.energy.serializeNBT());
-        tag.merge(this.recipeStorage.serializeNBT());
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        tag.put("Energy", this.energy.serializeNBT(lookup));
+        tag.merge(this.recipeStorage.serializeNBT(lookup));
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        this.energy.deserializeNBT(tag.get("Energy"));
-        this.recipeStorage.deserializeNBT(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        this.energy.deserializeNBT(lookup, tag.get("Energy"));
+        this.recipeStorage.deserializeNBT(lookup, tag);
     }
 
     @Override
@@ -55,22 +53,17 @@ public class AutoFluxCrafterTileEntity extends FluxCrafterTileEntity implements 
 
         // on load, we will re-validate the recipe outputs to ensure they are still correct
         if (this.level != null && !this.level.isClientSide()) {
-            this.getRecipeStorage().onLoad(this.level, ModRecipeTypes.FLUX_CRAFTER.get());
+            this.getRecipeStorage().validate(inventory -> this.level.getRecipeManager()
+                    .getRecipeFor(ModRecipeTypes.FLUX_CRAFTER.get(), inventory, this.level)
+                    .map(r -> r.value().assemble(inventory, this.level.registryAccess()))
+                    .orElse(ItemStack.EMPTY)
+            );
         }
     }
 
     @Override
     public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player player) {
         return AutoFluxCrafterContainer.create(windowId, playerInventory, this.getInventory(), this.getBlockPos());
-    }
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
-            return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
-        }
-
-        return super.getCapability(cap, side);
     }
 
     @Override
@@ -114,7 +107,7 @@ public class AutoFluxCrafterTileEntity extends FluxCrafterTileEntity implements 
         if (level == null)
             return;
 
-        var inventory = this.getInventory().toRecipeInventory(0, 9);
+        var inventory = this.getInventory().toCraftingInput(3, 3, 0, 9);
         var recipe = level.getRecipeManager()
                 .getRecipeFor(ModRecipeTypes.FLUX_CRAFTER.get(), inventory, level)
                 .orElse(null);
@@ -122,10 +115,10 @@ public class AutoFluxCrafterTileEntity extends FluxCrafterTileEntity implements 
         var result = ItemStack.EMPTY;
 
         if (recipe != null) {
-            result = recipe.assemble(inventory, level.registryAccess());
+            result = recipe.value().assemble(inventory, level.registryAccess());
         }
 
-        this.getRecipeStorage().setRecipe(index, inventory, result);
+        this.getRecipeStorage().setRecipe(index, this.getInventory(), result);
         this.setChangedAndDispatch();
     }
 
@@ -149,19 +142,16 @@ public class AutoFluxCrafterTileEntity extends FluxCrafterTileEntity implements 
         }
     }
 
-    private LazyOptional<IItemHandler> getAboveInventory() {
+    private Optional<IItemHandler> getAboveInventory() {
         var level = this.getLevel();
         var pos = this.getBlockPos().above();
 
         if (level != null) {
-            var tile = level.getBlockEntity(pos);
-
-            if (tile != null) {
-                return tile.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN);
-            }
+            var capability = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, Direction.DOWN);
+            return Optional.ofNullable(capability);
         }
 
-        return LazyOptional.empty();
+        return Optional.empty();
     }
 
     private boolean tryInsertItemIntoGrid(ItemStack input) {

@@ -7,7 +7,7 @@ import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.container.FluxAlternatorContainer;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -15,13 +15,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
 
 public class FluxAlternatorTileEntity extends BaseTileEntity implements MenuProvider {
-    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
     private final BaseEnergyStorage energy;
 
     public FluxAlternatorTileEntity(BlockPos pos, BlockState state) {
@@ -30,14 +25,14 @@ public class FluxAlternatorTileEntity extends BaseTileEntity implements MenuProv
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        this.energy.deserializeNBT(tag.get("Energy"));
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        this.energy.deserializeNBT(lookup, tag.get("Energy"));
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag,  HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
         tag.putInt("Energy", this.energy.getEnergyStored());
     }
 
@@ -49,15 +44,6 @@ public class FluxAlternatorTileEntity extends BaseTileEntity implements MenuProv
     @Override
     public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player player) {
         return FluxAlternatorContainer.create(windowId, playerInventory, this.getBlockPos());
-    }
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
-            return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
-        }
-
-        return super.getCapability(cap, side);
     }
 
     public BaseEnergyStorage getEnergy() {

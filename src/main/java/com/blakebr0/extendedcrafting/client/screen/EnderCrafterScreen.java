@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class EnderCrafterScreen extends BaseContainerScreen<EnderCrafterContainer> {
-	private static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/ender_crafter.png");
+	private static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/ender_crafter.png");
 	private EnderCrafterTileEntity tile;
 
 	public EnderCrafterScreen(EnderCrafterContainer container, Inventory inventory, Component title) {
@@ -34,7 +34,7 @@ public class EnderCrafterScreen extends BaseContainerScreen<EnderCrafterContaine
 
 	@Override
 	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		super.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
+		super.renderBg(gfx, partialTicks, mouseX, mouseY);
 
 		int x = this.getGuiLeft();
 		int y = this.getGuiTop();

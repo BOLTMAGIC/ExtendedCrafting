@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#c:ingots/black_iron",
+    "#c:ingots/crystaltine",
+    "#c:ingots/ender_ingot",
+    "#c:ingots/enhanced_ender_ingot",
+    "#c:ingots/enhanced_redstone_ingot",
+    "#c:ingots/redstone_ingot",
+    "#c:ingots/the_ultimate"
+  ]
+}

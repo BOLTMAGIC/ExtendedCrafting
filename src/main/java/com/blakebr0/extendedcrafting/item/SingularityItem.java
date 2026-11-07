@@ -11,9 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 
@@ -33,9 +30,8 @@ public class SingularityItem extends BaseItem implements IColored {
 		return Localizable.of(this.getDescriptionId(stack)).args(singularity.getDisplayName()).build();
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	@Override
-	public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
 		var singularity = SingularityUtils.getSingularity(stack);
 
 		if (singularity != null) {
@@ -45,7 +41,7 @@ public class SingularityItem extends BaseItem implements IColored {
 				tooltip.add(ModTooltips.getAddedByTooltip(modid));
 
 			if (flag.isAdvanced())
-				tooltip.add(ModTooltips.SINGULARITY_ID.args(singularity.getId()).color(ChatFormatting.DARK_GRAY).build());
+				tooltip.add(ModTooltips.SINGULARITY_ID.args(singularity.getId().toString()).color(ChatFormatting.DARK_GRAY).build());
 		}
 	}
 

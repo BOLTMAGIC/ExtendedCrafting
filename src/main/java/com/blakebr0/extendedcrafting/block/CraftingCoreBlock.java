@@ -1,18 +1,18 @@
 package com.blakebr0.extendedcrafting.block;
 
 import com.blakebr0.cucumber.block.BaseTileEntityBlock;
+import com.blakebr0.cucumber.helper.BlockHelper;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.util.VoxelShapeBuilder;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import com.blakebr0.extendedcrafting.tileentity.CraftingCoreTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +26,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
 
 public class CraftingCoreBlock extends BaseTileEntityBlock {
 	public static final VoxelShape CRAFTING_CORE_SHAPE = VoxelShapeBuilder.builder()
@@ -48,37 +47,37 @@ public class CraftingCoreBlock extends BaseTileEntityBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		var held = player.getItemInHand(hand);
 
 		if (!level.isClientSide()) {
 			var tile = level.getBlockEntity(pos);
 
 			if (tile instanceof CraftingCoreTileEntity core) {
-				if (trace.getDirection() == Direction.UP) {
+				if (hitResult.getDirection() == Direction.UP) {
 					var inventory = core.getInventory();
-					var stack = inventory.getStackInSlot(0);
+					var stackInSlot = inventory.getStackInSlot(0);
 
-					if (stack.isEmpty()) {
+					if (stackInSlot.isEmpty()) {
 						if (!held.isEmpty()) {
 							inventory.setStackInSlot(0, StackHelper.withSize(held, 1, false));
 							player.setItemInHand(hand, StackHelper.shrink(held, 1, false));
 							level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.0F);
 						}
 					} else {
-						var item = new ItemEntity(level, player.getX(), player.getY(), player.getZ(), stack);
+						var item = new ItemEntity(level, player.getX(), player.getY(), player.getZ(), stackInSlot);
 
 						item.setNoPickUpDelay();
 						level.addFreshEntity(item);
 						inventory.setStackInSlot(0, ItemStack.EMPTY);
 					}
 				} else {
-					NetworkHooks.openScreen((ServerPlayer) player, core, pos);
+					player.openMenu(core, pos);
 				}
 			}
 		}
 
-		return InteractionResult.SUCCESS;
+		return ItemInteractionResult.SUCCESS;
 	}
 
 	@Override
@@ -97,6 +96,16 @@ public class CraftingCoreBlock extends BaseTileEntityBlock {
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return CRAFTING_CORE_SHAPE;
+	}
+
+	@Override
+	protected boolean hasAnalogOutputSignal(BlockState state) {
+		return true;
+	}
+
+	@Override
+	protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+		return BlockHelper.getRedstoneSignalFromInventory(level.getBlockEntity(pos));
 	}
 
 	@Override

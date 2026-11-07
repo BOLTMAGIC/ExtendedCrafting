@@ -4,13 +4,13 @@ import com.blakebr0.cucumber.client.render.GhostItemRenderer;
 import com.blakebr0.cucumber.client.screen.BaseContainerScreen;
 import com.blakebr0.cucumber.client.screen.widget.EnergyBarWidget;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import com.google.common.collect.Lists;
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.client.screen.button.RecipeSelectButton;
 import com.blakebr0.extendedcrafting.client.screen.button.ToggleTableRunningButton;
 import com.blakebr0.extendedcrafting.container.LegendaryAutoTableContainer;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
+import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public class LegendaryAutoTableScreen extends BaseContainerScreen<LegendaryAutoTableContainer> {
-	public static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/legendary_auto_table.png");
+	public static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/legendary_auto_table.png");
 	private AutoTableTileEntity tile;
 
 	public LegendaryAutoTableScreen(LegendaryAutoTableContainer container, Inventory inventory, Component title) {
@@ -38,14 +38,14 @@ public class LegendaryAutoTableScreen extends BaseContainerScreen<LegendaryAutoT
 		int y = this.getGuiTop();
 		var pos = this.getMenu().getBlockPos();
 
-		this.addRenderableWidget(new ToggleTableRunningButton(x + 292, y + 162, pos, this::isRunning));
+		this.addRenderableWidget(new ToggleTableRunningButton(x + 298, y + 151, pos, this::isRunning));
 
 		this.tile = this.getTileEntity();
 
 		if (this.tile != null) {
-			this.addRenderableWidget(new RecipeSelectButton(x + 276, y + 7, pos, 0, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
-			this.addRenderableWidget(new RecipeSelectButton(x + 289, y + 7, pos, 1, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
-			this.addRenderableWidget(new RecipeSelectButton(x + 302, y + 7, pos, 2, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
+			this.addRenderableWidget(new RecipeSelectButton(x + 282, y + 7, pos, 0, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
+			this.addRenderableWidget(new RecipeSelectButton(x + 295, y + 7, pos, 1, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
+			this.addRenderableWidget(new RecipeSelectButton(x + 308, y + 7, pos, 2, this.tile.getRecipeStorage(), this::onSelectButtonTooltip));
 
 			this.addRenderableWidget(new EnergyBarWidget(x + 7, y + 95, this.tile.getEnergy()));
 		}
@@ -58,7 +58,7 @@ public class LegendaryAutoTableScreen extends BaseContainerScreen<LegendaryAutoT
 
 		super.renderTooltip(gfx, mouseX, mouseY);
 
-		if (mouseX > x + 292 && mouseX < x + 269 && mouseY > y + 161 && mouseY < y + 171) {
+		if (mouseX > x + 298 && mouseX < x + 311 && mouseY > y + 150 && mouseY < y + 166) {
 			gfx.renderTooltip(this.font, ModTooltips.TOGGLE_AUTO_CRAFTING.color(ChatFormatting.WHITE).build(), mouseX, mouseY);
 		}
 	}
@@ -68,19 +68,19 @@ public class LegendaryAutoTableScreen extends BaseContainerScreen<LegendaryAutoT
 		var title = this.getTitle().getString();
 
 		gfx.drawString(this.font, title, 26, 6, 4210752, false);
-		gfx.drawString(this.font, this.playerInventoryTitle, 62, this.imageHeight - 94, 4210752, false);
+		gfx.drawString(this.font, this.playerInventoryTitle, 63, this.imageHeight - 94, 4210752, false);
 	}
 
 	@Override
 	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		super.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
+		super.renderBg(gfx, partialTicks, mouseX, mouseY);
 
 		int x = this.getGuiLeft();
 		int y = this.getGuiTop();
 
 		if (this.isRunning()) {
 			int i2 = this.getProgressBarScaled();
-			gfx.blit(BACKGROUND, x + 297, y + 161, 344, 0, 13, i2, 512, 512);
+			gfx.blit(BACKGROUND, x + 297, y + 150, 344, 0, 13, i2, 512, 512);
 		}
 
 		var recipe = this.getSelectedRecipe();
@@ -99,7 +99,7 @@ public class LegendaryAutoTableScreen extends BaseContainerScreen<LegendaryAutoT
 
 			var output = recipe.getStackInSlot(recipe.getSlots() - 1);
 
-			GhostItemRenderer.renderItemIntoGui(output, x + 261, y + 107, itemRenderer);
+			GhostItemRenderer.renderItemIntoGui(output, x + 297, y + 126, itemRenderer);
 		}
 	}
 

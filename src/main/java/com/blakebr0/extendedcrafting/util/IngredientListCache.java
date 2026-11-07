@@ -1,32 +1,33 @@
 package com.blakebr0.extendedcrafting.util;
 
+import it.unimi.dsi.fastutil.Function;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class IngredientListCache {
     private static final IngredientListCache INSTANCE = new IngredientListCache();
-    private final Map<ResourceLocation, List<List<Component>>> lists;
+    private final Object2ObjectOpenHashMap<Recipe<?>, List<List<Component>>> lists;
 
     private IngredientListCache() {
-        this.lists = new HashMap<>();
+        this.lists = new Object2ObjectOpenHashMap<>();
     }
 
-    public List<Component> getIngredientsList(ResourceLocation id, NonNullList<Ingredient> ingredients) {
-        return this.lists.computeIfAbsent(id, r -> createIngredientsList(ingredients))
+    public List<Component> getIngredientsList(Recipe<?> recipe, Supplier<NonNullList<Ingredient>> ingredients) {
+        return this.lists.computeIfAbsent(recipe, r -> createIngredientsList(ingredients.get()))
                 .stream()
                 .map(l -> {
                     var index = (System.currentTimeMillis() / 2000L) % l.size();
